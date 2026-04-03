@@ -1,1 +1,71 @@
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include "pico/stdlib.h"
+#include "hardware/spi.h"
+#include "display.h"
 
+// ==========================================================================
+// TILE MAPS ==> https://www.spriters-resource.com/arcade/pacman/asset/73389/
+// ==========================================================================
+
+const uint16_t tile_1[TILE_WIDTH * TILE_HEIGHT] = {
+BLUE, BLUE, BLUE, BLUE, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLUE, BLUE, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLUE, BLACK,
+BLUE, BLUE, BLUE, BLACK, BLACK, BLACK, BLUE, BLACK,
+BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLUE,
+BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE
+};
+
+const uint16_t tile_2[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLUE, BLUE, BLUE,
+    BLACK, BLACK, BLUE, BLUE, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLUE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLUE, BLACK, BLACK, BLACK, BLUE, BLUE, BLUE,
+    BLUE, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK,
+    BLUE, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLACK,
+    BLUE, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLACK,
+    BLUE, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLACK
+};
+
+const uint16_t tile_3[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+};
+
+const uint16_t tile_4[TILE_WIDTH * TILE_HEIGHT] = {
+    BLUE, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLUE,
+};
+
+int main(){
+    
+    stdio_init_all();
+    
+    display_init();
+    tft_fill_screen(BLACK);
+    sleep_ms(1000);
+    draw_map();
+
+    for(;;){
+
+        tft_write_tile(tile_2, 0, 0, 7,7);
+        
+    }
+}
