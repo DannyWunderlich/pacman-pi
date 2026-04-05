@@ -17,9 +17,9 @@
 // SPRITE / TILES
 #define TILE_WIDTH 8
 #define TILE_HEIGHT 8
-
 #define NUM_TILES_X 28
 #define NUM_TILES_Y 31
+#define HORIZONTAL_OFFSET 48
 
 // Colors
 #define BLACK ((uint16_t)0x0000)
