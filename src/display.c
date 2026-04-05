@@ -4,9 +4,9 @@
 #include "hardware/dma.h"
 #include "display.h"
 
-// ==========================================================================
-// TILE MAPS ==> https://www.spriters-resource.com/arcade/pacman/asset/73389/
-// ==========================================================================
+// =============================================================================
+// TILE SPRITES ==> https://www.spriters-resource.com/arcade/pacman/asset/73389/
+// =============================================================================
 
 const uint16_t tile_1[TILE_WIDTH * TILE_HEIGHT] = {
 BLUE, BLUE, BLUE, BLUE, BLACK, BLACK, BLACK, BLACK,
@@ -471,25 +471,25 @@ BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
 const uint16_t tile_43[TILE_WIDTH * TILE_HEIGHT] = {
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLUE, BLUE, BLUE,
 BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLACK,
-BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,
+BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLACK,
 };
 
 const uint16_t tile_44[TILE_WIDTH * TILE_HEIGHT] = {
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLUE, BLUE, BLUE, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK,
-BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,
+BLACK, BLACK, BLACK, BLACK, BLUE, BLACK, BLACK, BLACK,
 };
 
 // EMPTY TILE ===>
@@ -503,6 +503,10 @@ BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
+
+// ==========================================================================
+//                              END TILE SPRITES
+// ==========================================================================
 
 const uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {
     {2, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 44, 43, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 1,},
@@ -680,88 +684,127 @@ void draw_map(){
                     tileptr = tile_4;
                     break;
                 case(5):
-                    tileptr = tile_1;
+                    tileptr = tile_5;
                     break;
                 case(6):
-                    tileptr = tile_2;
+                    tileptr = tile_6;
                     break;
                 case(7):
-                    tileptr = tile_3;
+                    tileptr = tile_7;
                     break;
                 case(8):
-                    tileptr = tile_4;
+                    tileptr = tile_8;
                     break;
                 case(9):
-                    tileptr = tile_1;
+                    tileptr = tile_9;
                     break;
                 case(10):
-                    tileptr = tile_2;
+                    tileptr = tile_10;
                     break;
                 case(11):
-                    tileptr = tile_3;
+                    tileptr = tile_11;
                     break;
                 case(12):
-                    tileptr = tile_4;
+                    tileptr = tile_12;
                     break;
                 case(13):
-                    tileptr = tile_1;
+                    tileptr = tile_13;
                     break;
                 case(14):
-                    tileptr = tile_2;
+                    tileptr = tile_14;
                     break;
                 case(15):
-                    tileptr = tile_3;
+                    tileptr = tile_15;
                     break;
                 case(16):
-                    tileptr = tile_4;
+                    tileptr = tile_16;
                     break;
                 case(17):
-                    tileptr = tile_1;
+                    tileptr = tile_17;
                     break;
                 case(18):
-                    tileptr = tile_2;
+                    tileptr = tile_18;
                     break;
                 case(19):
-                    tileptr = tile_3;
+                    tileptr = tile_19;
                     break;
                 case(20):
-                    tileptr = tile_4;
+                    tileptr = tile_20;
                     break;
                 case(21):
-                    tileptr = tile_1;
+                    tileptr = tile_21;
                     break;
                 case(22):
-                    tileptr = tile_2;
+                    tileptr = tile_22;
                     break;
                 case(23):
-                    tileptr = tile_3;
+                    tileptr = tile_23;
                     break;
                 case(24):
-                    tileptr = tile_4;
+                    tileptr = tile_24;
                     break;
                 case(25):
-                    tileptr = tile_1;
+                    tileptr = tile_25;
                     break;
                 case(26):
-                    tileptr = tile_2;
+                    tileptr = tile_26;
                     break;
                 case(27):
-                    tileptr = tile_3;
+                    tileptr = tile_27;
                     break;
                 case(28):
-                    tileptr = tile_4;
+                    tileptr = tile_28;
                     break;
                 case(29):
-                    tileptr = tile_1;
+                    tileptr = tile_29;
                     break;
                 case(30):
-                    tileptr = tile_2;
+                    tileptr = tile_30;
                     break;
                 case(31):
-                    tileptr = tile_3;
+                    tileptr = tile_31;
                     break;
                 case(32):
-                    tileptr = tile_4;
+                    tileptr = tile_32;
+                    break;
+                case(33):
+                    tileptr = tile_33;
+                    break;
+                case(34):
+                    tileptr = tile_34;
+                    break;
+                case(35):
+                    tileptr = tile_35;
+                    break;
+                case(36):
+                    tileptr = tile_36;
+                    break;
+                case(37):
+                    tileptr = tile_37;
+                    break;
+                case(38):
+                    tileptr = tile_38;
+                    break;
+                case(39):
+                    tileptr = tile_39;
+                    break;
+                case(40):
+                    tileptr = tile_40;
+                    break;
+                case(41):
+                    tileptr = tile_41;
+                    break;
+                case(42):
+                    tileptr = tile_42;
+                    break;
+                case(43):
+                    tileptr = tile_43;
+                    break;
+                case(44):
+                    tileptr = tile_44;
+                    break;
+                case(45):
+                    tileptr = tile_45;
                     break;
                 default:
                     tileptr = tile_45;
