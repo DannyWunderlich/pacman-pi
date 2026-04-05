@@ -661,14 +661,14 @@ void draw_map(){
     for(int i = 0; i < NUM_TILES_Y; i ++){
         for(int j = 0; j < NUM_TILES_X; j ++){
             
-            uint16_t x0 = j * TILE_WIDTH;
+            uint16_t x0 = j * TILE_WIDTH + HORIZONTAL_OFFSET;
             uint16_t y0 = i * TILE_HEIGHT;
             uint16_t x1 = x0 + TILE_WIDTH - 1;
             uint16_t y1 = y0 + TILE_HEIGHT - 1;
 
             tile_sel = tile_map[i][j];
 
-            switch(tile_sel){
+            switch(tile_sel){ // --> Can just change the map to a 2d array of pointers so we dont need this long switch case
                 case(1):
                     tileptr = tile_1;
                     break;
