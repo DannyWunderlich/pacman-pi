@@ -858,55 +858,68 @@ void draw_map(){
     }
 }
 
-void update_pacman(InputState controls, uint8_t* pacman_x, uint8_t* pacman_y){
+void update_pacman(InputState controls, PacmanState* pacman){
+
+    pacman->lastx = pacman->x;
+    pacman->lasty = pacman->y;
+    
     switch(controls.joystick){
         case INPUT_DIRECTION_NONE :
-             *pacman_x += 0;
-             *pacman_y += 0;
+             pacman->x += 0;
+             pacman->y += 0;
         break;
         case INPUT_DIRECTION_UP   :
-             if(tile_map[*pacman_y + 1][*pacman_x] == 45){
-                *pacman_x += 0;
-                *pacman_y += -1;
+             if(tile_map[pacman->y + 1][pacman->x] == 45){
+                pacman->x += 0;
+                pacman->y += -1;
+                pacman->direction = FACING_UP;
              }
         break;
         case INPUT_DIRECTION_DOWN :
-            if(tile_map[*pacman_y - 1][*pacman_x] == 45){
-                *pacman_x += 0;
-                *pacman_y += 1;
+            if(tile_map[pacman->y - 1][pacman->x] == 45){
+                pacman->x += 0;
+                pacman->y += 1;
+                pacman->direction = FACING_DOWN;
              }
         break;
         case INPUT_DIRECTION_LEFT :
-             if(tile_map[*pacman_y][*pacman_x - 1] == 45){
-                *pacman_x += -1;
-                *pacman_y += 0;
+             if(tile_map[pacman->y][pacman->x - 1] == 45){
+                pacman->x += -1;
+                pacman->y += 0;
+                pacman->direction = FACING_LEFT;
              }
         break;
         case INPUT_DIRECTION_RIGHT:
-            if(tile_map[*pacman_y][*pacman_x + 1] == 45){
-                *pacman_x += 1;
-                *pacman_y += 0;
+            if(tile_map[pacman->y][pacman->x] == 45){
+                pacman->x += 1;
+                pacman->y += 0;
+                pacman->direction = FACING_RIGHT;
              }
         break;
         default:
-             *pacman_x += 0;
-             *pacman_y += 0;
+             pacman->x += 0;
+             pacman->y += 0;
         break;
     }
 
 }
 
-void draw_pacman(InputState controls, uint8_t pacman_x, uint8_t pacman_y){
+void draw_pacman(InputState controls, PacmanState pacman){
     uint8_t sel = 0;
+    uint16_t x0;
+    uint16_t y0;
+    uint16_t x1;
+    uint16_t y1;
+    uint16_t fill_color = BLACK;
 
     // Draw the pacman tiles
     for(int i = 0; i < NUM_PACMAN_TILES_Y; i ++){
         for(int j = 0; j < NUM_PACMAN_TILES_X; j ++){
             
-            uint16_t x0 = (pacman_x + j) * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-            uint16_t y0 = (pacman_y + i) * TILE_HEIGHT - (TILE_HEIGHT / 2);
-            uint16_t x1 = x0 + TILE_WIDTH - 1;
-            uint16_t y1 = y0 + TILE_HEIGHT - 1;
+            x0 = (pacman.x + j) * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+            y0 = (pacman.y + i) * TILE_HEIGHT - (TILE_HEIGHT / 2);
+            x1 = x0 + TILE_WIDTH - 1;
+            y1 = y0 + TILE_HEIGHT - 1;
 
             switch(sel){
                 case 0: tft_write_tile(face_left_tl, x0, y0, x1, y1);
@@ -922,6 +935,51 @@ void draw_pacman(InputState controls, uint8_t pacman_x, uint8_t pacman_y){
         }
     }
 
-    // TODO : Redraw black to the direction he was coming from
+    // Redraw black to the direction he was coming from
+    if(pacman.lastx < pacman.x){
+        x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = x0 + TILE_WIDTH - 1;
+        y0 = pacman.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
 
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+    }
+    else if(pacman.lastx > pacman.x){
+        x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET + (TILE_WIDTH / 2);
+        x1 = x0 + TILE_WIDTH - 1;
+        y0 = pacman.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+    }
+    else if(pacman.lasty < pacman.y){
+
+    }
+    else if(pacman.lasty > pacman.y){
+        
+    }
 }

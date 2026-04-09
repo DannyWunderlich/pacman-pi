@@ -29,6 +29,22 @@
 #define BLUE ((uint16_t)0x001F)
 #define YELLOW ((uint16_t)0xFFE0)
 
+typedef enum {
+    FACING_UP,
+    FACING_LEFT,
+    FACING_RIGHT,
+    FACING_DOWN
+}PacmanFacing;
+
+typedef struct
+{
+    uint8_t y;
+    uint8_t x;
+    uint8_t lasty;
+    uint8_t lastx;
+    PacmanFacing direction;
+}PacmanState;
+
 // Display Functions
 void tft_write_command(uint8_t cmd);
 void tft_write_data(uint8_t data);
@@ -38,8 +54,9 @@ void display_init(void);
 void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_map(void);
 
-void update_pacman(InputState controls, uint8_t* pacman_x, uint8_t* pacman_y);
-void draw_pacman(InputState controls, uint8_t pacman_x, uint8_t pacman_y);
+// Pacman Functions
+void update_pacman(InputState controls, PacmanState* pacman);
+void draw_pacman(InputState controls, PacmanState pacman);
 
 // Tile Sprites
 extern const uint16_t tile_1[TILE_HEIGHT * TILE_WIDTH];

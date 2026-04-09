@@ -7,18 +7,20 @@
 #include "display.h"
 #include "controls.h"
 
-// Init X and Y pos / Velocity Direction
-uint8_t pacman_ypos = 23;
-uint8_t pacman_xpos = 13;
-
-uint8_t pacman_yvel = 0;
-uint8_t pacman_xvel = 0;
 
 // Controls Struct (for testing rn)
 InputState current_input = {
-    .joystick = INPUT_DIRECTION_RIGHT,
+    .joystick = INPUT_DIRECTION_LEFT,
     .start_pressed = true,
     .select_pressed = false
+};
+
+PacmanState pacman = {
+    .y = 23,
+    .x = 13,
+    .lasty = 23,
+    .lastx = 13,
+    .direction = FACING_RIGHT
 };
 
 int main(){
@@ -30,15 +32,17 @@ int main(){
     tft_fill_screen(BLACK);
     sleep_ms(100);
     
+    // Draw Map and Initial Pacman 
     draw_map();
+    draw_pacman(current_input, pacman);
     
     for(;;){
 
         // Update Pacman pos
-        update_pacman(current_input, &pacman_xpos, &pacman_ypos);
+        update_pacman(current_input, &pacman);
 
         // Draw Pacman updated pos
-        draw_pacman(current_input, pacman_xpos, pacman_ypos);
+        draw_pacman(current_input, pacman);
 
         sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
     }
