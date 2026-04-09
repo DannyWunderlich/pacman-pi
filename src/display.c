@@ -504,6 +504,50 @@ BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+const uint16_t face_left_tl[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t face_left_tr[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+};
+
+const uint16_t face_left_bl[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t face_left_br[TILE_WIDTH * TILE_HEIGHT] = {
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 // ==========================================================================
 //                              END TILE SPRITES
 // ==========================================================================
@@ -812,4 +856,72 @@ void draw_map(){
             // sleep_ms(5);
         }
     }
+}
+
+void update_pacman(InputState controls, uint8_t* pacman_x, uint8_t* pacman_y){
+    switch(controls.joystick){
+        case INPUT_DIRECTION_NONE :
+             *pacman_x += 0;
+             *pacman_y += 0;
+        break;
+        case INPUT_DIRECTION_UP   :
+             if(tile_map[*pacman_y + 1][*pacman_x] == 45){
+                *pacman_x += 0;
+                *pacman_y += -1;
+             }
+        break;
+        case INPUT_DIRECTION_DOWN :
+            if(tile_map[*pacman_y - 1][*pacman_x] == 45){
+                *pacman_x += 0;
+                *pacman_y += 1;
+             }
+        break;
+        case INPUT_DIRECTION_LEFT :
+             if(tile_map[*pacman_y][*pacman_x - 1] == 45){
+                *pacman_x += -1;
+                *pacman_y += 0;
+             }
+        break;
+        case INPUT_DIRECTION_RIGHT:
+            if(tile_map[*pacman_y][*pacman_x + 1] == 45){
+                *pacman_x += 1;
+                *pacman_y += 0;
+             }
+        break;
+        default:
+             *pacman_x += 0;
+             *pacman_y += 0;
+        break;
+    }
+
+}
+
+void draw_pacman(InputState controls, uint8_t pacman_x, uint8_t pacman_y){
+    uint8_t sel = 0;
+
+    // Draw the pacman tiles
+    for(int i = 0; i < NUM_PACMAN_TILES_Y; i ++){
+        for(int j = 0; j < NUM_PACMAN_TILES_X; j ++){
+            
+            uint16_t x0 = (pacman_x + j) * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+            uint16_t y0 = (pacman_y + i) * TILE_HEIGHT - (TILE_HEIGHT / 2);
+            uint16_t x1 = x0 + TILE_WIDTH - 1;
+            uint16_t y1 = y0 + TILE_HEIGHT - 1;
+
+            switch(sel){
+                case 0: tft_write_tile(face_left_tl, x0, y0, x1, y1);
+                break;
+                case 1: tft_write_tile(face_left_tr, x0, y0, x1, y1);
+                break;
+                case 2: tft_write_tile(face_left_bl, x0, y0, x1, y1);
+                break; 
+                case 3: tft_write_tile(face_left_br, x0, y0, x1, y1);
+                break;
+            }
+            sel ++;
+        }
+    }
+
+    // TODO : Redraw black to the direction he was coming from
+
 }
