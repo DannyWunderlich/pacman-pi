@@ -2,6 +2,7 @@
 #define DISPLAY_H
 
 #include <stdint.h>
+#include "controls.h"
 
 // TFT DISPLAY
 #define TFT_WIDTH 240
@@ -19,11 +20,14 @@
 #define TILE_HEIGHT 8
 #define NUM_TILES_X 28
 #define NUM_TILES_Y 31
+#define NUM_PACMAN_TILES_X 2
+#define NUM_PACMAN_TILES_Y 2
 #define HORIZONTAL_OFFSET 48
 
 // Colors
 #define BLACK ((uint16_t)0x0000)
 #define BLUE ((uint16_t)0x001F)
+#define YELLOW ((uint16_t)0xFFE0)
 
 // Display Functions
 void tft_write_command(uint8_t cmd);
@@ -33,6 +37,9 @@ void tft_fill_screen(uint16_t color);
 void display_init(void);
 void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_map(void);
+
+void update_pacman(InputState controls, uint8_t* pacman_x, uint8_t* pacman_y);
+void draw_pacman(InputState controls, uint8_t pacman_x, uint8_t pacman_y);
 
 // Tile Sprites
 extern const uint16_t tile_1[TILE_HEIGHT * TILE_WIDTH];
@@ -80,6 +87,9 @@ extern const uint16_t tile_42[TILE_HEIGHT * TILE_WIDTH];
 extern const uint16_t tile_43[TILE_HEIGHT * TILE_WIDTH];
 extern const uint16_t tile_44[TILE_HEIGHT * TILE_WIDTH];
 extern const uint16_t tile_45[TILE_HEIGHT * TILE_WIDTH];
+
+// Pacman Sprites
+
 
 // Default map
 extern const uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
