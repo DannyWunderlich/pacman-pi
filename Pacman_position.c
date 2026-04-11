@@ -5,8 +5,6 @@ void Pacman_position(float pm_position [2], int movement, int map[rows][columns]
   // 0 represents a wall
   // rows and columns will need to fit the map
   // speed < 1
-  int current_row = pm_position[0];
-  int  current_column = pm_position[1];
   if (movement == 1) // up
   {
     if (map[floor(pm_position[0] - speed - .5)][floor(pm_position[1] - .5)] == 0 || map[floor(pm_position[0] - speed - .5)][ceil(pm_position[1] + .5)] == 0)
