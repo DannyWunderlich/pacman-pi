@@ -504,15 +504,17 @@ BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
-const uint16_t face_left_tl[TILE_WIDTH * TILE_HEIGHT] = {
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
-BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
-BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
-BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
-BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW,
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+
+// FACING LEFT ===>
+const uint16_t face_left_tl[(TILE_WIDTH - 1) * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
 const uint16_t face_left_tr[TILE_WIDTH * TILE_HEIGHT] = {
@@ -526,15 +528,15 @@ YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
 BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
 };
 
-const uint16_t face_left_bl[TILE_WIDTH * TILE_HEIGHT] = {
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW,
-BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
-BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
-BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
-BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
-BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+const uint16_t face_left_bl[(TILE_WIDTH - 1) * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW,
+BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
 const uint16_t face_left_br[TILE_WIDTH * TILE_HEIGHT] = {
@@ -547,6 +549,52 @@ BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
+
+// FACING RIGHT ===>
+const uint16_t face_right_tl[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK,
+};
+
+const uint16_t face_right_tr[(TILE_WIDTH - 1) * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+    YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+    YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+    YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+    YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t face_right_bl[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t face_right_br[(TILE_WIDTH - 1) * TILE_HEIGHT] = {
+    YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+    YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+    YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+    YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 
 // ==========================================================================
 //                              END TILE SPRITES
@@ -688,6 +736,23 @@ void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1,
     gpio_put(TFT_SPI_CSN, 0);
 
     for(int i = 0; i < TILE_HEIGHT * TILE_WIDTH; i ++){
+        uint8_t hi = (uint8_t)(tile[i] >> 8);
+        uint8_t lo = (uint8_t)(tile[i] & 0xFF);
+
+        spi_write_blocking(spi0, &hi, 1);
+        spi_write_blocking(spi0, &lo, 1);
+    }
+
+    gpio_put(TFT_SPI_CSN, 1);
+}
+
+void tft_write_sliced_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+    tft_set_address_window(x0, y0, x1, y1);
+
+    gpio_put(TFT_DC, 1);
+    gpio_put(TFT_SPI_CSN, 0);
+
+    for(int i = 0; i < TILE_HEIGHT * (TILE_WIDTH - 1); i ++){
         uint8_t hi = (uint8_t)(tile[i] >> 8);
         uint8_t lo = (uint8_t)(tile[i] & 0xFF);
 
@@ -869,14 +934,14 @@ void update_pacman(InputState controls, PacmanState* pacman){
              pacman->y += 0;
         break;
         case INPUT_DIRECTION_UP   :
-             if(tile_map[pacman->y + 1][pacman->x] == 45){
+             if(tile_map[pacman->y - 1][pacman->x] == 45){
                 pacman->x += 0;
                 pacman->y += -1;
                 pacman->direction = FACING_UP;
              }
         break;
         case INPUT_DIRECTION_DOWN :
-            if(tile_map[pacman->y - 1][pacman->x] == 45){
+            if(tile_map[pacman->y + 1][pacman->x] == 45){
                 pacman->x += 0;
                 pacman->y += 1;
                 pacman->direction = FACING_DOWN;
@@ -890,7 +955,7 @@ void update_pacman(InputState controls, PacmanState* pacman){
              }
         break;
         case INPUT_DIRECTION_RIGHT:
-            if(tile_map[pacman->y][pacman->x] == 45){
+            if(tile_map[pacman->y][pacman->x + 1] == 45){
                 pacman->x += 1;
                 pacman->y += 0;
                 pacman->direction = FACING_RIGHT;
@@ -922,13 +987,25 @@ void draw_pacman(InputState controls, PacmanState pacman){
             y1 = y0 + TILE_HEIGHT - 1;
 
             switch(sel){
-                case 0: tft_write_tile(face_left_tl, x0, y0, x1, y1);
+                case 0: (pacman.direction == FACING_LEFT) ? tft_write_sliced_tile(face_left_tl, x0 + 1, y0, x1, y1) :
+                        (pacman.direction == FACING_RIGHT) ? tft_write_tile(face_right_tl, x0, y0, x1, y1)          :
+                        (pacman.direction == FACING_UP) ? tft_write_tile(face_left_tl, x0, y0, x1, y1)         :
+                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_left_tl, x0, y0, x1, y1)       : (void)0;
                 break;
-                case 1: tft_write_tile(face_left_tr, x0, y0, x1, y1);
+                case 1: (pacman.direction == FACING_LEFT) ? tft_write_tile(face_left_tr, x0, y0, x1, y1)     :
+                        (pacman.direction == FACING_RIGHT) ? tft_write_sliced_tile(face_right_tr, x0, y0, x1 - 1, y1)          :
+                        (pacman.direction == FACING_UP) ? tft_write_tile(face_left_tr, x0, y0, x1, y1)         :
+                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_left_tr, x0, y0, x1, y1)       : (void)0;
                 break;
-                case 2: tft_write_tile(face_left_bl, x0, y0, x1, y1);
+                case 2: (pacman.direction == FACING_LEFT) ? tft_write_sliced_tile(face_left_bl, x0 + 1, y0, x1, y1) :
+                        (pacman.direction == FACING_RIGHT) ? tft_write_tile(face_right_bl, x0, y0, x1, y1)          :
+                        (pacman.direction == FACING_UP) ? tft_write_tile(face_left_tl, x0, y0, x1, y1)         :
+                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_left_tl, x0, y0, x1, y1)       : (void)0;
                 break; 
-                case 3: tft_write_tile(face_left_br, x0, y0, x1, y1);
+                case 3: (pacman.direction == FACING_LEFT) ? tft_write_tile(face_left_br, x0, y0, x1, y1) :
+                        (pacman.direction == FACING_RIGHT) ? tft_write_sliced_tile(face_right_br, x0, y0, x1 - 1, y1)          :
+                        (pacman.direction == FACING_UP) ? tft_write_tile(face_left_br, x0, y0, x1, y1)         :
+                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_left_br, x0, y0, x1, y1)       : (void)0;
                 break;
             }
             sel ++;
