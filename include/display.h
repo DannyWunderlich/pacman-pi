@@ -29,6 +29,12 @@
 #define BLUE ((uint16_t)0x001F)
 #define YELLOW ((uint16_t)0xFFE0)
 
+typedef enum{
+    STARTING_MENU,
+    GAMEPLAY,
+    GAME_OVER
+}GameState;
+
 typedef enum {
     FACING_UP,
     FACING_LEFT,
