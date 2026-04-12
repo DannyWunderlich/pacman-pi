@@ -44,6 +44,9 @@ PacmanState pacman = {
     .direction = FACING_RIGHT
 };
 
+// Game State global variable
+GameState game_state = STARTING_MENU;
+
 int main(){
     
     stdio_init_all();
@@ -61,6 +64,7 @@ int main(){
     draw_map();
     draw_pacman(current_input, pacman);
     
+    // Game loop
     for(;;){
         // FOR TESTING WITH KEYPAD v =======
 
