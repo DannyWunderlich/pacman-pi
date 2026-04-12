@@ -595,9 +595,98 @@ const uint16_t face_right_br[(TILE_WIDTH - 1) * TILE_HEIGHT] = {
     BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+// FACING UP ===>
+const uint16_t face_up_tl[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, BLACK, BLACK,
+    BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK,
+    BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK,
+    BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+};
+
+const uint16_t face_up_tr[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, YELLOW, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+};
+
+const uint16_t face_up_bl[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t face_up_br[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+// FACING DOWN ===>
+const uint16_t face_down_tl[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW,
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK,
+};
+
+const uint16_t face_down_tr[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK
+};
+
+const uint16_t face_down_bl[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK,
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+BLACK, BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK,
+BLACK, BLACK, BLACK, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, YELLOW, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t face_down_br[TILE_WIDTH * TILE_HEIGHT] = {
+YELLOW, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+BLACK, YELLOW, YELLOW, YELLOW, YELLOW, BLACK, BLACK, BLACK,
+BLACK, BLACK, YELLOW, YELLOW, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, YELLOW, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
 
 // ==========================================================================
-//                              END TILE SPRITES
+//                              DEFAULT MAP
 // ==========================================================================
 
 const uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {
@@ -623,9 +712,9 @@ const uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {
     {2, 12, 12, 12, 12, 27, 45, 28, 27, 45, 28, 21, 21, 36, 35, 21, 21, 27, 45, 28, 27, 45, 28, 12, 12, 12, 12, 1,},
     {4, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 3,},
     {4, 45, 24, 16, 16, 23, 45, 24, 16, 16, 16, 23, 45, 26, 25, 45, 24, 16, 16, 16, 23, 45, 24, 16, 16, 23, 45, 3,}, 
-    {4, 45, 28, 21, 36, 26, 45, 28, 21, 21, 21, 27, 45, 28, 27, 45, 28, 21, 21, 21, 27, 45, 26, 35, 21, 27, 45, 3,},
-    {4, 45, 45, 45, 26, 26, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 3,},
-    {8, 16, 39, 45, 26, 26, 45, 40, 39, 45, 40, 16, 16, 16, 16, 16, 16, 39, 45, 40, 39, 45, 26, 25, 45, 40, 16, 7,},
+    {4, 45, 28, 21, 36, 25, 45, 28, 21, 21, 21, 27, 45, 28, 27, 45, 28, 21, 21, 21, 27, 45, 26, 35, 21, 27, 45, 3,},
+    {4, 45, 45, 45, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 3,},
+    {8, 16, 39, 45, 26, 25, 45, 40, 39, 45, 40, 16, 16, 16, 16, 16, 16, 39, 45, 40, 39, 45, 26, 25, 45, 40, 16, 7,},
     {10, 21, 27, 45, 28, 27, 45, 26, 25, 45, 28, 21, 21, 36, 35, 21, 21, 27, 45, 26, 25, 45, 28, 27, 45, 28, 21, 9,},
     {4, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 45, 45, 3,},
     {4, 45, 40, 16, 16, 16, 16, 38, 37, 16, 16, 39, 45, 26, 25, 45, 40, 16, 16, 38, 37, 16, 16, 16, 16, 39, 45, 3,}, 
@@ -975,7 +1064,6 @@ void draw_pacman(InputState controls, PacmanState pacman){
     uint16_t y0;
     uint16_t x1;
     uint16_t y1;
-    uint16_t fill_color = BLACK;
 
     // Draw the pacman tiles
     for(int i = 0; i < NUM_PACMAN_TILES_Y; i ++){
@@ -989,23 +1077,23 @@ void draw_pacman(InputState controls, PacmanState pacman){
             switch(sel){
                 case 0: (pacman.direction == FACING_LEFT) ? tft_write_sliced_tile(face_left_tl, x0 + 1, y0, x1, y1) :
                         (pacman.direction == FACING_RIGHT) ? tft_write_tile(face_right_tl, x0, y0, x1, y1)          :
-                        (pacman.direction == FACING_UP) ? tft_write_tile(face_left_tl, x0, y0, x1, y1)         :
-                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_left_tl, x0, y0, x1, y1)       : (void)0;
+                        (pacman.direction == FACING_UP) ? tft_write_tile(face_up_tl, x0, y0, x1, y1)                :
+                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_down_tl, x0, y0, x1, y1)            : (void)0;
                 break;
-                case 1: (pacman.direction == FACING_LEFT) ? tft_write_tile(face_left_tr, x0, y0, x1, y1)     :
-                        (pacman.direction == FACING_RIGHT) ? tft_write_sliced_tile(face_right_tr, x0, y0, x1 - 1, y1)          :
-                        (pacman.direction == FACING_UP) ? tft_write_tile(face_left_tr, x0, y0, x1, y1)         :
-                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_left_tr, x0, y0, x1, y1)       : (void)0;
+                case 1: (pacman.direction == FACING_LEFT) ? tft_write_tile(face_left_tr, x0, y0, x1, y1)             :
+                        (pacman.direction == FACING_RIGHT) ? tft_write_sliced_tile(face_right_tr, x0, y0, x1 - 1, y1):
+                        (pacman.direction == FACING_UP) ? tft_write_tile(face_up_tr, x0, y0, x1, y1)                 :
+                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_down_tr, x0, y0, x1, y1)             : (void)0;
                 break;
                 case 2: (pacman.direction == FACING_LEFT) ? tft_write_sliced_tile(face_left_bl, x0 + 1, y0, x1, y1) :
                         (pacman.direction == FACING_RIGHT) ? tft_write_tile(face_right_bl, x0, y0, x1, y1)          :
-                        (pacman.direction == FACING_UP) ? tft_write_tile(face_left_tl, x0, y0, x1, y1)         :
-                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_left_tl, x0, y0, x1, y1)       : (void)0;
+                        (pacman.direction == FACING_UP) ? tft_write_tile(face_up_bl, x0, y0, x1, y1)                :
+                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_down_bl, x0, y0, x1, y1)            : (void)0;
                 break; 
-                case 3: (pacman.direction == FACING_LEFT) ? tft_write_tile(face_left_br, x0, y0, x1, y1) :
-                        (pacman.direction == FACING_RIGHT) ? tft_write_sliced_tile(face_right_br, x0, y0, x1 - 1, y1)          :
-                        (pacman.direction == FACING_UP) ? tft_write_tile(face_left_br, x0, y0, x1, y1)         :
-                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_left_br, x0, y0, x1, y1)       : (void)0;
+                case 3: (pacman.direction == FACING_LEFT) ? tft_write_tile(face_left_br, x0, y0, x1, y1)             :
+                        (pacman.direction == FACING_RIGHT) ? tft_write_sliced_tile(face_right_br, x0, y0, x1 - 1, y1):
+                        (pacman.direction == FACING_UP) ? tft_write_tile(face_up_br, x0, y0, x1, y1)                 :
+                        (pacman.direction == FACING_DOWN) ? tft_write_tile(face_down_br, x0, y0, x1, y1)             : (void)0;
                 break;
             }
             sel ++;
@@ -1013,6 +1101,8 @@ void draw_pacman(InputState controls, PacmanState pacman){
     }
 
     // Redraw black to the direction he was coming from
+    uint16_t fill_color = BLACK;
+
     if(pacman.lastx < pacman.x){
         x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
         x1 = x0 + TILE_WIDTH - 1;
@@ -1053,10 +1143,43 @@ void draw_pacman(InputState controls, PacmanState pacman){
 
         gpio_put(TFT_SPI_CSN, 1);
     }
-    else if(pacman.lasty < pacman.y){
+    else if(pacman.lasty < pacman.y) {
+        x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = x0 + (2 * TILE_WIDTH - 1);
+        y0 = pacman.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + TILE_HEIGHT - 1;
 
-    }
-    else if(pacman.lasty > pacman.y){
-        
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+        gpio_put(TFT_SPI_CSN, 1);
+    }   
+    else if (pacman.lasty > pacman.y) {
+        x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = x0 + (2 * TILE_WIDTH - 1);
+        y0 = pacman.lasty * TILE_HEIGHT + (TILE_HEIGHT / 2);
+        y1 = y0 + TILE_HEIGHT - 1;
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
     }
 }
