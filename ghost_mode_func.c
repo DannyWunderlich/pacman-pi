@@ -23,7 +23,7 @@ int ghost_mmode_func(int pacman_mode, int map[row][column], int ghost_mode, int 
     }
     else 
     {
-        ghost_mode = 1;
+        ghost_mode = 2;
     }
     return ghost_mode;
 }
