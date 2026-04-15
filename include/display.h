@@ -83,6 +83,7 @@ void draw_map(void);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_start_screen();
 GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost);
+GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost);
 
 // Pacman Functions
 void update_pacman(InputState controls, PacmanState* pacman);

@@ -887,6 +887,17 @@ BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+const uint16_t red_letter_r[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, RED, RED, RED, RED, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, RED, RED, RED, RED, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 const uint16_t letter_e[TILE_WIDTH * TILE_HEIGHT] = {
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
@@ -895,6 +906,17 @@ BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
 BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t red_letter_e[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, RED, RED, RED, RED, RED, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, RED, RED, RED, RED, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, RED, RED, RED, RED, RED, RED, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
@@ -931,6 +953,61 @@ BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+const uint16_t red_letter_a[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, RED, RED, RED, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, RED, RED, RED, RED, RED, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_g[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, RED, RED, RED, RED, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, RED, BLACK, RED, RED, RED, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, BLACK, RED, RED, RED, RED, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_m[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, RED, RED, BLACK, RED, RED, BLACK, BLACK,
+BLACK, RED, BLACK, RED, BLACK, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_o[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, RED, RED, RED, BLACK, BLACK,
+BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
+BLACK, BLACK, BLACK, RED, RED, RED, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_v[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK, BLACK,
+BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK, BLACK,
+BLACK, BLACK, RED, BLACK, RED, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, RED, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 const uint16_t letter_exclam[TILE_WIDTH * TILE_HEIGHT] = {
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
@@ -939,6 +1016,17 @@ BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t red_letter_exclam[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, RED, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, RED, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, RED, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, RED, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, RED, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
@@ -1563,6 +1651,8 @@ GameState check_start_pressed(uint16_t keyevent, InputState* current_input, Pacm
         draw_map();
         draw_pacman(*current_input, pacman);
 
+        // TODO : Draw Food around the map
+
         // Draw initial ghost pos
         draw_ghost(redghost);
         draw_ghost(pinkghost);
@@ -1624,4 +1714,56 @@ void draw_ghost(GhostState ghost){
     //                     (pacman.direction == FACING_RIGHT) ? tft_write_sliced_tile(face_right_tr, x0, y0, x1 - 1, y1):
     //                     (pacman.direction == FACING_UP) ? tft_write_tile(face_up_tr, x0, y0, x1, y1)                 :
     //                     (pacman.direction == FACING_DOWN) ? tft_write_tile(face_down_tr, x0, y0, x1, y1)             : (void)0;
+}
+
+GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost){
+    if((pacman.x == redghost.x && pacman.y == redghost.y) || (pacman.x == pinkghost.x && pacman.y == pinkghost.y) || 
+       (pacman.x == blueghost.x && pacman.y == blueghost.y) || (pacman.x == orangeghost.x && pacman.y == orangeghost.y)){
+        return GAME_OVER;
+       }
+    else {
+        return GAMEPLAY;
+    }
+}
+
+void draw_end_screen(){
+    tft_fill_screen(BLACK);
+
+    sleep_ms(500);
+    
+    uint16_t x0 = 115;
+    uint16_t y0 = 13 * TILE_HEIGHT;
+    uint16_t x1 = x0 + TILE_WIDTH - 1;
+    uint16_t y1 = y0 + TILE_HEIGHT - 1;
+
+    draw_letter(letter_g, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(red_letter_a, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_m, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(red_letter_e, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(tile_45, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_o, x0, y0, x1, y1); // Space
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_v, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(red_letter_e, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(red_letter_r, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(red_letter_exclam, x0, y0, x1, y1);
+
+    sleep_ms(500);
 }
