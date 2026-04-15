@@ -128,6 +128,11 @@ int main(){
             keyevent = key_pop();
             game_state = check_start_pressed(keyevent, &current_input, pacman, pinkghost, redghost, blueghost, orangeghost);
         }
+        else if(game_state == GAME_OVER){
+            tft_fill_screen(BLACK);
+
+            draw_end_screen();
+        }
 
         else if(game_state == GAMEPLAY){
 
@@ -139,7 +144,14 @@ int main(){
         // Draw Pacman updated pos
         draw_pacman(current_input, pacman);
 
-        // TODO : Draw Ghost Pos
+        // Draw Ghost Pos
+        draw_ghost(redghost);
+        draw_ghost(blueghost);
+        draw_ghost(pinkghost);
+        draw_ghost(orangeghost);
+
+        // TODO : Check pacman collision w/ ghosts
+        game_state = check_collision(pacman, redghost, pinkghost, blueghost, orangeghost);
 
         sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
         }
