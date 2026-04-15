@@ -38,11 +38,43 @@ InputState current_input = {
 
 // Pacman struct, contains initial position
 PacmanState pacman = {
-    .y = 14,  //23
-    .x = 27,  //13
-    .lasty = 14,
-    .lastx = 27,
+    .y = 23,  //23
+    .x = 13,  //13
+    .lasty = 23,
+    .lastx = 13,
     .direction = FACING_RIGHT
+};
+
+GhostState redghost = {
+    .y = 14,
+    .x = 12,
+    .lasty = 14,
+    .lastx = 12,
+    .color = COLOR_RED
+};
+
+GhostState pinkghost = {
+    .y = 14,
+    .x = 15,
+    .lasty = 14,
+    .lastx = 15,
+    .color = COLOR_PINK
+};
+
+GhostState blueghost = {
+    .y = 11,
+    .x = 18,
+    .lasty = 11,
+    .lastx = 18,
+    .color = COLOR_BLUE
+};
+
+GhostState orangeghost = {
+    .y = 11,
+    .x = 9,
+    .lasty = 11,
+    .lastx = 9,
+    .color = COLOR_ORANGE
 };
 
 // Game State global variable
@@ -94,7 +126,7 @@ int main(){
 
             // Pop a key and check if start ('*') is pressed
             keyevent = key_pop();
-            game_state = check_start_pressed(keyevent, &current_input, pacman);
+            game_state = check_start_pressed(keyevent, &current_input, pacman, pinkghost, redghost, blueghost, orangeghost);
         }
 
         else if(game_state == GAMEPLAY){

@@ -23,12 +23,18 @@
 #define NUM_PACMAN_TILES_X 2
 #define NUM_PACMAN_TILES_Y 2
 #define HORIZONTAL_OFFSET 48
+#define NUM_GHOST_TILES_X 2
+#define NUM_GHOST_TILES_Y 3
 
 // Colors
 #define BLACK ((uint16_t)0x0000)
 #define BLUE ((uint16_t)0x001F)
 #define YELLOW ((uint16_t)0xFFE0)
 #define ORANGE ((uint16_t)0xFD86)
+#define RED ((uint16_t)0xF800)
+#define WHITE ((uint16_t)0xFFFF)
+#define PINK ((uint16_t)0xF59A)
+#define LIGHTBLUE ((uint16_t)0xA51E)
 
 typedef enum{
     STARTING_MENU,
@@ -43,14 +49,28 @@ typedef enum {
     FACING_DOWN
 }PacmanFacing;
 
-typedef struct
-{
+typedef enum{
+    COLOR_PINK,
+    COLOR_RED,
+    COLOR_BLUE,
+    COLOR_ORANGE
+}GhostColor;
+
+typedef struct{
     uint8_t y;
     uint8_t x;
     uint8_t lasty;
     uint8_t lastx;
     PacmanFacing direction;
 }PacmanState;
+
+typedef struct{
+    uint8_t y;
+    uint8_t x;
+    uint8_t lasty;
+    uint8_t lastx;
+    GhostColor color;
+}GhostState;
 
 // Display Functions
 void tft_write_command(uint8_t cmd);
@@ -62,11 +82,14 @@ void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1,
 void draw_map(void);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_start_screen();
-GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman);
+GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost);
 
 // Pacman Functions
 void update_pacman(InputState controls, PacmanState* pacman);
 void draw_pacman(InputState controls, PacmanState pacman);
+
+// Ghost Functions
+void draw_ghost(GhostState ghost);
 
 // Tile Sprites
 extern const uint16_t tile_1[TILE_HEIGHT * TILE_WIDTH];
