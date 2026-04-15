@@ -12,7 +12,8 @@
 uint16_t key_pop() {
     // Queue is empty
     while (kev.head == kev.tail) {
-        sleep_ms(10);   // Wait for an event to be pushed
+        // sleep_ms(10);   // Wait for an event to be pushed
+        return 0;
     }
     uint16_t value = kev.q[kev.tail];
     kev.tail = (kev.tail + 1) % 32;
@@ -31,16 +32,16 @@ void key_push(uint16_t value) {
 // Controls Struct (for testing rn)
 InputState current_input = {
     .joystick = INPUT_DIRECTION_NONE,
-    .start_pressed = true,
+    .start_pressed = false,
     .select_pressed = false
 };
 
 // Pacman struct, contains initial position
 PacmanState pacman = {
-    .y = 23,
-    .x = 13,
-    .lasty = 23,
-    .lastx = 13,
+    .y = 14,  //23
+    .x = 27,  //13
+    .lasty = 14,
+    .lastx = 27,
     .direction = FACING_RIGHT
 };
 
@@ -60,39 +61,55 @@ int main(){
     keypad_init_pins();
     keypad_init_timer();
     
-    // Draw Map and Initial Pacman 
-    draw_map();
-    draw_pacman(current_input, pacman);
-    
     // Game loop
     for(;;){
+
         // FOR TESTING WITH KEYPAD v =======
-
         uint32_t keyevent = key_pop();
-            if (keyevent & (1 << 8)) {
-                char button = (char) (keyevent & 0xFF);
-                if(button == 'C'){
-                    current_input.joystick = INPUT_DIRECTION_UP;
-                }
-                else if(button == '#'){
-                    current_input.joystick = INPUT_DIRECTION_RIGHT;
-                }
-                else if(button == '8'){
-                    current_input.joystick = INPUT_DIRECTION_DOWN;
-                }
-                else if(button == '6'){
-                    current_input.joystick = INPUT_DIRECTION_LEFT;
-                }
+        if (keyevent & (1 << 8)) {
+            char button = (char) (keyevent & 0xFF);
+            if(button == 'C'){
+                current_input.joystick = INPUT_DIRECTION_UP;
             }
-
+            else if(button == '#'){
+                current_input.joystick = INPUT_DIRECTION_RIGHT;
+            }
+            else if(button == '8'){
+                current_input.joystick = INPUT_DIRECTION_DOWN;
+            }
+            else if(button == '6'){
+                current_input.joystick = INPUT_DIRECTION_LEFT;
+            }
+            else if(button == '*'){
+                current_input.start_pressed = true;
+            }
+        }
         // FOR TESTING WITH KEYPAD ^ =======
+
+
+        if(game_state == STARTING_MENU)
+        {       
+            // Draw the start screen
+            draw_start_screen();
+
+            // Pop a key and check if start ('*') is pressed
+            keyevent = key_pop();
+            game_state = check_start_pressed(keyevent, &current_input, pacman);
+        }
+
+        else if(game_state == GAMEPLAY){
 
         // Update Pacman pos
         update_pacman(current_input, &pacman);
 
+        // TODO : Update Ghost Pos
+
         // Draw Pacman updated pos
         draw_pacman(current_input, pacman);
 
+        // TODO : Draw Ghost Pos
+
         sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
+        }
     }
 }

@@ -685,6 +685,84 @@ BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+// LETTERS ==>
+const uint16_t letter_p[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_r[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_e[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_s[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_te[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_a[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_exclam[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 // ==========================================================================
 //                              DEFAULT MAP
 // ==========================================================================
@@ -1037,14 +1115,26 @@ void update_pacman(InputState controls, PacmanState* pacman){
              }
         break;
         case INPUT_DIRECTION_LEFT :
-             if(tile_map[pacman->y][pacman->x - 1] == 45){
+            if(pacman->x == 0 && pacman->y == 14){ // wrap to other side
+                pacman->x = 27;
+                pacman->y = 14;
+                pacman->direction = FACING_LEFT;
+
+            }
+            else if(tile_map[pacman->y][pacman->x - 1] == 45){
                 pacman->x += -1;
                 pacman->y += 0;
                 pacman->direction = FACING_LEFT;
              }
         break;
         case INPUT_DIRECTION_RIGHT:
-            if(tile_map[pacman->y][pacman->x + 1] == 45){
+            if(pacman->x == 27 && pacman->y == 14){ // wrap to other side
+                pacman->x = 0;
+                pacman->y = 14;
+                pacman->direction = FACING_RIGHT;
+
+            }
+            else if(tile_map[pacman->y][pacman->x + 1] == 45){
                 pacman->x += 1;
                 pacman->y += 0;
                 pacman->direction = FACING_RIGHT;
@@ -1103,7 +1193,48 @@ void draw_pacman(InputState controls, PacmanState pacman){
     // Redraw black to the direction he was coming from
     uint16_t fill_color = BLACK;
 
-    if(pacman.lastx < pacman.x){
+    // Redraw wrap around
+    if(pacman.x == 0 && pacman.y == 14 && pacman.lastx == 27 && pacman.lasty == 14){
+        x0 = 27 * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = (x0 + (TILE_WIDTH * 2) - 1);
+        y0 = 14 * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+    }
+    else if(pacman.x == 27 && pacman.y == 14 && pacman.lastx == 0 && pacman.lasty == 14){
+        x0 = 0 * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = (x0 + (TILE_WIDTH * 2) - 1);
+        y0 = 14 * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+    }
+    else if(pacman.lastx < pacman.x){
         x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
         x1 = x0 + TILE_WIDTH - 1;
         y0 = pacman.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
@@ -1182,4 +1313,83 @@ void draw_pacman(InputState controls, PacmanState pacman){
 
         gpio_put(TFT_SPI_CSN, 1);
     }
+}
+void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1){
+    tft_write_tile(tile, x0, y0, x1, y1);
+}
+
+void draw_start_screen(){
+    
+    tft_fill_screen(BLACK);
+
+    sleep_ms(500);
+    
+    uint16_t x0 = 115;
+    uint16_t y0 = 13 * TILE_HEIGHT;
+    uint16_t x1 = x0 + TILE_WIDTH - 1;
+    uint16_t y1 = y0 + TILE_HEIGHT - 1;
+
+    draw_letter(letter_p, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_r, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_e, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_s, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_s, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(tile_45, x0, y0, x1, y1); // Space
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_s, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_te, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_a, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_r, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_te, x0, y0, x1, y1);
+    x0 += 8;
+    x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_exclam, x0, y0, x1, y1);
+
+    sleep_ms(500);
+}
+
+GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman){
+    if (keyevent & (1 << 8)) {
+        char button = (char) (keyevent & 0xFF);
+        if(button == '*'){
+            current_input->start_pressed = true;
+        }
+        else{
+            current_input->start_pressed = false;
+        }
+    }
+
+    if(current_input->start_pressed == true){
+        
+        // Draw Map and Initial Pacman 
+        draw_map();
+        draw_pacman(*current_input, pacman);
+
+        // TODO: Draw initial ghost pos
+        
+        return GAMEPLAY;
+    }
+    else{
+        return STARTING_MENU;
+    }
+        
 }
