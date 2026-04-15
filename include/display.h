@@ -28,6 +28,7 @@
 #define BLACK ((uint16_t)0x0000)
 #define BLUE ((uint16_t)0x001F)
 #define YELLOW ((uint16_t)0xFFE0)
+#define ORANGE ((uint16_t)0xFD86)
 
 typedef enum{
     STARTING_MENU,
@@ -59,6 +60,9 @@ void tft_fill_screen(uint16_t color);
 void display_init(void);
 void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_map(void);
+void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void draw_start_screen();
+GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman);
 
 // Pacman Functions
 void update_pacman(InputState controls, PacmanState* pacman);
