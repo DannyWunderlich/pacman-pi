@@ -123,6 +123,9 @@ int main(){
 
     // Initialize ghost cage unlock timer
     init_ghostunlock_timer();
+
+    // Initialize the game map storing the pellet / powers data matrix
+    reset_game_map();
     
     // Game loop
     for(;;){
@@ -203,7 +206,7 @@ int main(){
         // draw_ghost(orangeghost, pacman);
 
         // Check pacman collision w/ ghosts
-        game_state = check_collision(pacman, redghost, pinkghost, &scoreboard);
+        game_state = check_collision(pacman, &redghost, &pinkghost, &scoreboard);
 
         // TODO : Add sound 2
 
