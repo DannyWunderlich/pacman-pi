@@ -37,12 +37,13 @@ InputState current_input = {
 };
 
 // Pacman struct, contains initial position
-PacmanState pacman = {
+volatile PacmanState pacman = {
     .y = 23,  //23
     .x = 13,  //13
     .lasty = 23,
     .lastx = 13,
-    .direction = FACING_RIGHT
+    .direction = FACING_RIGHT,
+    .mode = NORMAL
 };
 
 GhostState redghost = {
@@ -77,6 +78,14 @@ GhostState orangeghost = {
     .color = COLOR_ORANGE
 };
 
+volatile ScoreBoard scoreboard = {
+    .score = 0,
+    .lives = 3,
+    .num_pellets = 237,
+    .num_powers = 4,
+    .total_food = 241
+};
+
 // Game State global variable
 GameState game_state = STARTING_MENU;
 
@@ -92,6 +101,9 @@ int main(){
     // Initialize keypad pins and timer for testing
     keypad_init_pins();
     keypad_init_timer();
+
+    // Initialize the Chomper interrupt (mode for when you pick up a powerup)
+    init_chomper_timer();
     
     // Game loop
     for(;;){
@@ -139,6 +151,8 @@ int main(){
         // Update Pacman pos
         update_pacman(current_input, &pacman);
 
+        // TODO : Update Scoreboard
+        update_scoreboard(&pacman, &scoreboard, redghost, orangeghost, pinkghost, blueghost);
         // TODO : Update Ghost Pos
 
         // Draw Pacman updated pos
@@ -150,10 +164,14 @@ int main(){
         draw_ghost(pinkghost);
         draw_ghost(orangeghost);
 
-        // TODO : Check pacman collision w/ ghosts
-        game_state = check_collision(pacman, redghost, pinkghost, blueghost, orangeghost);
+        // Check pacman collision w/ ghosts
+        game_state = check_collision(pacman, redghost, pinkghost, blueghost, orangeghost, &scoreboard);
 
         sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
+
+        printf("SCORE: %d\n", scoreboard.score);
+        printf("PELLETS: %d\n", scoreboard.num_pellets);
+        printf("POWERS: %d\n", scoreboard.num_powers);
         }
     }
 }

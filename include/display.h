@@ -42,6 +42,11 @@ typedef enum{
     GAME_OVER
 }GameState;
 
+typedef enum{
+    NORMAL,
+    CHOMPER
+}PacmanMode;
+
 typedef enum {
     FACING_UP,
     FACING_LEFT,
@@ -62,6 +67,7 @@ typedef struct{
     uint8_t lasty;
     uint8_t lastx;
     PacmanFacing direction;
+    PacmanMode mode;
 }PacmanState;
 
 typedef struct{
@@ -71,6 +77,14 @@ typedef struct{
     uint8_t lastx;
     GhostColor color;
 }GhostState;
+
+typedef struct{
+    int score;
+    uint8_t lives;
+    uint8_t num_pellets;
+    uint8_t num_powers;
+    uint8_t total_food;
+}ScoreBoard;
 
 // Display Functions
 void tft_write_command(uint8_t cmd);
@@ -83,7 +97,8 @@ void draw_map(void);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_start_screen();
 GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost);
-GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost);
+GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost, ScoreBoard* scoreboard);
+void draw_end_screen();
 
 // Pacman Functions
 void update_pacman(InputState controls, PacmanState* pacman);
@@ -91,6 +106,12 @@ void draw_pacman(InputState controls, PacmanState pacman);
 
 // Ghost Functions
 void draw_ghost(GhostState ghost);
+
+// Scoreboarding Functions
+void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState orangeghost, GhostState pinkghost, GhostState blueghost);
+void init_chomper_timer();
+void chomper_isr();
+
 
 // Tile Sprites
 extern const uint16_t tile_1[TILE_HEIGHT * TILE_WIDTH];
@@ -143,6 +164,10 @@ extern const uint16_t tile_45[TILE_HEIGHT * TILE_WIDTH];
 
 
 // Default map
-extern const uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
+extern uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
+
+// Global Pacman, Ghost, and scoreboard
+extern volatile PacmanState pacman;
+extern volatile ScoreBoard scoreboard;
 
 #endif
