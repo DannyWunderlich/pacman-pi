@@ -1837,6 +1837,7 @@ void draw_ghost(GhostState ghost, PacmanState pacman){
         }
 
         gpio_put(TFT_SPI_CSN, 1);
+
     }
     else if(ghost.lastx > ghost.x){
         x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET + (TILE_WIDTH / 2);
@@ -1897,6 +1898,18 @@ void draw_ghost(GhostState ghost, PacmanState pacman){
 
         gpio_put(TFT_SPI_CSN, 1);
     }
+
+     // Write a pellet / power if it is there --> Makes the ghosts look a little weird but whatever
+    if(tile_map[ghost.lasty][ghost.lastx] == 46 || tile_map[ghost.lasty][ghost.lastx] == 47){
+        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET;
+        y0 = ghost.lasty * TILE_HEIGHT;
+        x1 = x0 + TILE_WIDTH - 1;
+        y1 = y0 + TILE_HEIGHT - 1;
+
+        tile_map[ghost.lasty][ghost.lastx] == 46 ? tft_write_tile(tile_46, x0, y0, x1, y1) :
+                                                   tft_write_tile(tile_47, x0, y0, x1, y1);
+
+    }
 }
 
 void redraw_black_in_house(GhostState ghost){
@@ -1929,7 +1942,7 @@ void redraw_black_in_house(GhostState ghost){
         gpio_put(TFT_SPI_CSN, 1);
 
     }
-    else if(ghost.color == COLOR_PINK && (ghost.x == OUT_START_LEFT_X && ghost.y == OUT_START_LEFT_Y)){
+    else if(ghost.color == COLOR_PINK && (ghost.x == OUT_START_RIGHT_X && ghost.y == OUT_START_RIGHT_Y)){
         // Redraw black inside the right house spot
         x0 = HOUSE_START_RIGHT_X * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
         x1 = (x0 + (TILE_WIDTH * 2) - 1);
@@ -1952,9 +1965,9 @@ void redraw_black_in_house(GhostState ghost){
     }
 }
 
-GameState check_collision(PacmanState pacman, GhostState* redghost, GhostState* pinkghost, ScoreBoard* scoreboard){
-    if(((pacman.x == redghost->x && pacman.y == redghost->y) || (pacman.x == pinkghost->x && pacman.y == pinkghost->y) 
-        && pacman.mode == NORMAL)) {
+GameState check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost, ScoreBoard* scoreboard){
+    if(((pacman->x == redghost->x && pacman->y == redghost->y) || (pacman->x == pinkghost->x && pacman->y == pinkghost->y) 
+        && pacman->mode == NORMAL)) {
         
         scoreboard->lives -= 1;
         if(scoreboard->lives == 0){
@@ -1971,6 +1984,10 @@ GameState check_collision(PacmanState pacman, GhostState* redghost, GhostState* 
 
             // TODO : Respawn pellets, reset pacman location, redraw updated map
             reset_game_map();
+            pacman->x = PACMAN_START_X;
+            pacman->y = PACMAN_START_Y;
+            pacman->lastx = PACMAN_START_X;
+            pacman->lasty = PACMAN_START_Y;
             draw_map();
 
             return GAMEPLAY;
@@ -2085,6 +2102,8 @@ void ghostunlock_isr(){
             // redghost.lasty = redghost.y;
             redghost.x = OUT_START_LEFT_X;
             redghost.y = OUT_START_LEFT_Y;
+
+            redraw_black_in_house(redghost);
         }
     }
     else{
@@ -2100,6 +2119,8 @@ void ghostunlock_isr(){
             // pinkghost.lasty = pinkghost.y;
             pinkghost.x = OUT_START_RIGHT_X;
             pinkghost.y = OUT_START_RIGHT_Y;
+
+            redraw_black_in_house(pinkghost);
         }
     }
     else{

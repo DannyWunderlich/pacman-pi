@@ -38,10 +38,10 @@ InputState current_input = {
 
 // Pacman struct, contains initial position
 volatile PacmanState pacman = {
-    .y = 23,  //23
-    .x = 13,  //13
-    .lasty = 23,
-    .lastx = 13,
+    .y = PACMAN_START_Y,  //23
+    .x = PACMAN_START_X,  //13
+    .lasty = PACMAN_START_Y,
+    .lastx = PACMAN_START_X,
     .direction = FACING_RIGHT,
     .mode = NORMAL
 };
@@ -206,7 +206,7 @@ int main(){
         // draw_ghost(orangeghost, pacman);
 
         // Check pacman collision w/ ghosts
-        game_state = check_collision(pacman, &redghost, &pinkghost, &scoreboard);
+        game_state = check_collision(&pacman, &redghost, &pinkghost, &scoreboard);
 
         // TODO : Add sound 2
 

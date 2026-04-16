@@ -36,6 +36,10 @@
 #define PINK ((uint16_t)0xF59A)
 #define LIGHTBLUE ((uint16_t)0xA51E)
 
+// Pacman Starting Location
+#define PACMAN_START_X 13
+#define PACMAN_START_Y 23
+
 // Ghost Starting Locations
 #define HOUSE_START_LEFT_Y 14
 #define HOUSE_START_LEFT_X 12
@@ -116,7 +120,7 @@ void draw_map(void);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_start_screen();
 GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost);
-GameState check_collision(PacmanState pacman, GhostState* redghost, GhostState* pinkghost, ScoreBoard* scoreboard);
+GameState check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost, ScoreBoard* scoreboard);
 void draw_end_screen();
 
 // Pacman Functions
