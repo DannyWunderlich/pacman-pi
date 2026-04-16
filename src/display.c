@@ -1984,10 +1984,15 @@ GameState check_collision(PacmanState* pacman, GhostState* redghost, GhostState*
 
             // TODO : Respawn pellets, reset pacman location, redraw updated map
             reset_game_map();
+
+            scoreboard->num_pellets = 237;
+            scoreboard->num_powers = 4;
+
             pacman->x = PACMAN_START_X;
             pacman->y = PACMAN_START_Y;
             pacman->lastx = PACMAN_START_X;
             pacman->lasty = PACMAN_START_Y;
+
             draw_map();
 
             return GAMEPLAY;

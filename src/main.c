@@ -213,11 +213,9 @@ int main(){
         sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
 
 
-        printf("RED POS: X --> %d LASTX --> %d\n", redghost.x, redghost.lastx);
-        printf("PINK POS: X --> %d LASTX --> %d\n", pinkghost.x, pinkghost.lastx);
-        // printf("SCORE: %d\n", scoreboard.score);
-        // printf("PELLETS: %d\n", scoreboard.num_pellets);
-        // printf("POWERS: %d\n", scoreboard.num_powers);
+        printf("SCORE: %d\n", scoreboard.score);
+        printf("PELLETS: %d\n", scoreboard.num_pellets);
+        printf("POWERS: %d\n", scoreboard.num_powers);
         }
     }
 }
