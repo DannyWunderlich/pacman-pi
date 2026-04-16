@@ -9,6 +9,17 @@
 // TILE SPRITES ==> https://www.spriters-resource.com/arcade/pacman/asset/73389/
 // =============================================================================
 
+const uint16_t tile_0[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE,
+WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE,
+WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 const uint16_t tile_1[TILE_WIDTH * TILE_HEIGHT] = {
 BLUE, BLUE, BLUE, BLUE, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLUE, BLUE, BLACK, BLACK,
@@ -1120,7 +1131,7 @@ const uint8_t initial_tile_map[NUM_TILES_Y][NUM_TILES_X] = {
     {6, 14, 14, 14, 14, 39, 46, 26, 37, 16, 16, 39, 45, 26, 25, 45, 24, 16, 16, 38, 25, 46, 40, 14, 14, 14, 14, 5,},
     {45, 45, 45, 45, 45, 4, 46, 26, 35, 21, 21, 27, 45, 42, 41, 45, 42, 21, 21, 36, 25, 46, 3, 45, 45, 45, 45, 45,},
     {45, 45, 45, 45, 45, 4, 46, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 46, 3, 45, 45, 45, 45, 45,},
-    {45, 45, 45, 45, 45, 4, 46, 26, 25, 45, 30, 14, 34, 45, 45, 33, 14, 29, 45, 26, 25, 46, 3, 45, 45, 45, 45, 45,},
+    {45, 45, 45, 45, 45, 4, 46, 26, 25, 45, 30, 14, 34, 0, 0, 33, 14, 29, 45, 26, 25, 46, 3, 45, 45, 45, 45, 45,},
     {12, 12, 12, 12, 12, 27, 46, 42, 41, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 42, 41, 46, 28, 12, 12, 12, 12, 12,},
     {45, 45, 45, 45, 45, 45, 46, 45, 45, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 45, 45, 46, 45, 45, 45, 45, 45, 45,},
     {14, 14, 14, 14, 14, 39, 46, 40, 39, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 40, 39, 46, 24, 14, 14, 14, 14, 14,},
@@ -1135,7 +1146,7 @@ const uint8_t initial_tile_map[NUM_TILES_Y][NUM_TILES_X] = {
     {8, 16, 39, 46, 26, 25, 46, 40, 39, 46, 40, 16, 16, 16, 16, 16, 16, 39, 46, 40, 39, 46, 26, 25, 46, 40, 16, 7,},
     {10, 21, 27, 46, 28, 27, 46, 26, 25, 46, 28, 21, 21, 36, 35, 21, 21, 27, 46, 26, 25, 46, 28, 27, 46, 28, 21, 9,},
     {4, 46, 46, 46, 46, 46, 46, 26, 25, 46, 46, 46, 46, 26, 25, 46, 46, 46, 46, 26, 25, 46, 46, 46, 46, 46, 46, 3,},
-    {4, 46, 40, 16, 16, 16, 16, 38, 37, 16, 16, 39, 46, 26, 25, 46, 40, 16, 16, 38, 37, 16, 16, 16, 16, 39, 46, 3,}, 
+    {4, 46, 40, 16, 16, 16, 16, 38, 37, 16, 16, 39, 46, 26, 25, 46, 40, 16, 16, 38, 37, 16, 16, 16, 16, 39, 46, 3,},
     {4, 46, 28, 21, 21, 21, 21, 21, 21, 21, 21, 27, 46, 28, 27, 46, 28, 21, 21, 21, 21, 21, 21, 21, 21, 27, 46, 3,},
     {4, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 3,},
     {6, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 5,}
@@ -1287,6 +1298,9 @@ void draw_map(){
             tile_sel = tile_map[i][j];
 
             switch(tile_sel){ // --> Can just change the map to a 2d array of pointers so we dont need this long switch case
+                case(0):
+                    tileptr = tile_0;
+                    break;
                 case(1):
                     tileptr = tile_1;
                     break;
