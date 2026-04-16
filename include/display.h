@@ -36,6 +36,17 @@
 #define PINK ((uint16_t)0xF59A)
 #define LIGHTBLUE ((uint16_t)0xA51E)
 
+// Ghost Starting Locations
+#define HOUSE_START_LEFT_Y 14
+#define HOUSE_START_LEFT_X 12
+#define HOUSE_START_RIGHT_Y 14
+#define HOUSE_START_RIGHT_X 15
+
+#define OUT_START_LEFT_Y 11
+#define OUT_START_LEFT_X 9
+#define OUT_START_RIGHT_Y 11
+#define OUT_START_RIGHT_X 18
+
 typedef enum{
     STARTING_MENU,
     GAMEPLAY,
@@ -61,6 +72,11 @@ typedef enum{
     COLOR_ORANGE
 }GhostColor;
 
+typedef enum{
+    IN_HOUSE,
+    OUT_HOUSE
+}GhostLocation;
+
 typedef struct{
     uint8_t y;
     uint8_t x;
@@ -76,6 +92,8 @@ typedef struct{
     uint8_t lasty;
     uint8_t lastx;
     GhostColor color;
+    GhostLocation location;
+    uint8_t unlock_counter;
 }GhostState;
 
 typedef struct{
@@ -105,63 +123,12 @@ void update_pacman(InputState controls, PacmanState* pacman);
 void draw_pacman(InputState controls, PacmanState pacman);
 
 // Ghost Functions
-void draw_ghost(GhostState ghost);
+void draw_ghost(GhostState ghost, PacmanState pacman);
 
 // Scoreboarding Functions
 void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState orangeghost, GhostState pinkghost, GhostState blueghost);
 void init_chomper_timer();
 void chomper_isr();
-
-
-// Tile Sprites
-extern const uint16_t tile_1[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_2[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_3[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_4[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_5[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_6[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_7[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_8[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_9[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_10[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_11[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_12[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_13[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_14[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_15[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_16[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_17[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_18[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_19[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_20[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_21[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_22[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_23[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_24[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_25[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_26[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_27[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_28[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_29[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_30[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_31[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_32[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_33[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_34[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_35[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_36[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_37[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_38[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_39[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_40[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_41[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_42[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_43[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_44[TILE_HEIGHT * TILE_WIDTH];
-extern const uint16_t tile_45[TILE_HEIGHT * TILE_WIDTH];
-
-// Pacman Sprites
-
 
 // Default map
 extern uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
@@ -169,5 +136,9 @@ extern uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
 // Global Pacman, Ghost, and scoreboard
 extern volatile PacmanState pacman;
 extern volatile ScoreBoard scoreboard;
+// extern volatile GhostState redghost;
+// extern volatile GhostState orangeghost;
+// extern volatile GhostState pinkghost;
+// extern volatile GhostState blueghost;
 
 #endif

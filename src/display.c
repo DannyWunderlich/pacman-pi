@@ -887,6 +887,55 @@ BLACK, LIGHTBLUE, LIGHTBLUE, BLACK, BLACK, BLACK, LIGHTBLUE, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+// EATABLE GHOST ===>
+// Quadrant: Top Left (tl)
+const uint16_t eatable_tl[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLUE,  BLUE,
+    BLACK, BLACK, BLACK, BLACK, BLUE,  BLUE,  BLUE,  BLUE,
+    BLACK, BLACK, BLACK, BLUE,  BLUE,  BLUE,  BLUE,  BLUE,
+    BLACK, BLACK, BLUE,  BLUE,  BLUE,  WHITE, WHITE, BLUE,
+    BLACK, BLACK, BLUE,  BLUE,  WHITE, WHITE, WHITE, WHITE,
+    BLACK, BLACK, BLUE,  BLUE,  WHITE, WHITE, PINK,  PINK,
+    BLACK, BLUE,  BLUE,  BLUE,  WHITE, WHITE, PINK,  PINK,
+};
+
+// Quadrant: Top Right (tr)
+const uint16_t eatable_tr[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLUE,  BLUE,  BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLUE,  BLUE,  BLUE,  BLUE,  BLACK, BLACK, BLACK, BLACK,
+    BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLACK, BLACK, BLACK,
+    BLUE,  BLUE,  BLUE,  WHITE, WHITE, BLUE,  BLACK, BLACK,
+    BLUE,  BLUE,  WHITE, WHITE, WHITE, WHITE, BLACK, BLACK,
+    BLUE,  BLUE,  WHITE, WHITE, PINK,  PINK,  BLACK, BLACK,
+    BLUE,  BLUE,  WHITE, WHITE, PINK,  PINK,  BLACK, BLUE,
+};
+
+// Quadrant: Bottom Left (bl)
+const uint16_t eatable_bl[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLUE,  BLUE,  BLUE,  BLUE,  WHITE, WHITE, BLUE,
+    BLACK, BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,
+    BLACK, BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,
+    BLACK, BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,
+    BLACK, BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,
+    BLACK, BLUE,  BLUE,  BLACK, BLUE,  BLUE,  BLUE,  BLACK,
+    BLACK, BLUE,  BLACK, BLACK, BLACK, BLUE,  BLUE,  BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+// Quadrant: Bottom Right (br)
+const uint16_t eatable_br[TILE_WIDTH * TILE_HEIGHT] = {
+    BLUE,  BLUE,  BLUE,  WHITE, WHITE, BLUE,  BLUE,  BLACK,
+    BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLACK,
+    BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLACK,
+    BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLACK,
+    BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLUE,  BLACK,
+    BLACK, BLUE,  BLUE,  BLUE,  BLACK, BLUE,  BLUE,  BLACK,
+    BLACK, BLUE,  BLUE,  BLACK, BLACK, BLACK, BLUE,  BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 // LETTERS / NUMBERS ==> https://www.freepik.com/free-vector/flat-design-digital-display-font_44130967.htm#fromView=keyword&page=1&position=2&uuid=eb967466-5b54-40eb-a973-8917ecb664af&query=Pixel+art+alphabet
 const uint16_t letter_p[TILE_WIDTH * TILE_HEIGHT] = {
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
@@ -1715,13 +1764,11 @@ GameState check_start_pressed(uint16_t keyevent, InputState* current_input, Pacm
         draw_map();
         draw_pacman(*current_input, pacman);
 
-        // TODO : Draw Food around the map
-
         // Draw initial ghost pos
-        draw_ghost(redghost);
-        draw_ghost(pinkghost);
-        draw_ghost(blueghost);
-        draw_ghost(orangeghost);
+        draw_ghost(redghost, pacman);
+        draw_ghost(pinkghost, pacman);
+        draw_ghost(blueghost, pacman);
+        draw_ghost(orangeghost, pacman);
         
         return GAMEPLAY;
     }
@@ -1731,7 +1778,7 @@ GameState check_start_pressed(uint16_t keyevent, InputState* current_input, Pacm
         
 }
 
-void draw_ghost(GhostState ghost){
+void draw_ghost(GhostState ghost, PacmanState pacman){
     uint8_t sel = 0;
     uint16_t x0;
     uint16_t y0;
@@ -1747,22 +1794,26 @@ void draw_ghost(GhostState ghost){
             y1 = y0 + TILE_HEIGHT - 1;
 
             switch(sel){
-                case(0): ghost.color == COLOR_RED ? tft_write_tile(red_tl, x0, y0, x1, y1) : 
+                case(0): pacman.mode == CHOMPER ? tft_write_tile(eatable_tl, x0, y0, x1, y1) :
+                         ghost.color == COLOR_RED ? tft_write_tile(red_tl, x0, y0, x1, y1) : 
                          ghost.color == COLOR_PINK ? tft_write_tile(pink_tl, x0, y0, x1, y1) :
                          ghost.color == COLOR_ORANGE ? tft_write_tile(orange_tl, x0, y0, x1, y1) : 
                          ghost.color == COLOR_BLUE ? tft_write_tile(blue_tl, x0, y0, x1, y1) : (void)0;
                 break;
-                case(1): ghost.color == COLOR_RED ? tft_write_tile(red_tr, x0, y0, x1, y1) :
+                case(1): pacman.mode == CHOMPER ? tft_write_tile(eatable_tr, x0, y0, x1, y1) :
+                         ghost.color == COLOR_RED ? tft_write_tile(red_tr, x0, y0, x1, y1) :
                          ghost.color == COLOR_PINK ? tft_write_tile(pink_tr, x0, y0, x1, y1) :
                          ghost.color == COLOR_ORANGE ? tft_write_tile(orange_tr, x0, y0, x1, y1) : 
                          ghost.color == COLOR_BLUE ? tft_write_tile(blue_tr, x0, y0, x1, y1) : (void)0;
                 break;
-                case(2): ghost.color == COLOR_RED ? tft_write_tile(red_bl, x0, y0, x1, y1) :
+                case(2): pacman.mode == CHOMPER ? tft_write_tile(eatable_bl, x0, y0, x1, y1) :
+                         ghost.color == COLOR_RED ? tft_write_tile(red_bl, x0, y0, x1, y1) :
                          ghost.color == COLOR_PINK ? tft_write_tile(pink_bl, x0, y0, x1, y1) :
                          ghost.color == COLOR_ORANGE ? tft_write_tile(orange_bl, x0, y0, x1, y1) : 
                          ghost.color == COLOR_BLUE ? tft_write_tile(blue_bl, x0, y0, x1, y1) : (void)0;
                 break;
-                case(3): ghost.color == COLOR_RED ? tft_write_tile(red_br, x0, y0, x1, y1) :
+                case(3): pacman.mode == CHOMPER ? tft_write_tile(eatable_br, x0, y0, x1, y1) : 
+                         ghost.color == COLOR_RED ? tft_write_tile(red_br, x0, y0, x1, y1) :
                          ghost.color == COLOR_PINK ? tft_write_tile(pink_br, x0, y0, x1, y1) :
                          ghost.color == COLOR_ORANGE ? tft_write_tile(orange_br, x0, y0, x1, y1) : 
                          ghost.color == COLOR_BLUE ? tft_write_tile(blue_br, x0, y0, x1, y1) : (void)0;
@@ -1772,6 +1823,89 @@ void draw_ghost(GhostState ghost){
             }
             sel ++;
         }
+    }
+
+    // Redraw black the direction the ghost came from
+    uint16_t fill_color = BLACK;
+
+    if(ghost.lastx < ghost.x){
+        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = x0 + TILE_WIDTH - 1;
+        y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+    }
+    else if(ghost.lastx > ghost.x){
+        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET + (TILE_WIDTH / 2);
+        x1 = x0 + TILE_WIDTH - 1;
+        y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+    }
+    else if(ghost.lasty < ghost.y) {
+        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = x0 + (2 * TILE_WIDTH - 1);
+        y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + TILE_HEIGHT - 1;
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+        gpio_put(TFT_SPI_CSN, 1);
+    }   
+    else if (ghost.lasty > ghost.y) {
+        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = x0 + (2 * TILE_WIDTH - 1);
+        y0 = ghost.lasty * TILE_HEIGHT + (TILE_HEIGHT / 2);
+        y1 = y0 + TILE_HEIGHT - 1;
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
     }
 }
 
@@ -1785,7 +1919,7 @@ GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pi
         }
         // TODO : else we have to restart the level
        }
-    else {
+    else { // --> Might need to change
         return GAMEPLAY;
     }
 }
@@ -1855,6 +1989,10 @@ void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState r
         scoreboard->total_food -= 1;
         scoreboard->score += 10;
     }
+    else if(((pacman->x == redghost.x && pacman->y == redghost.y) ||(pacman->x == orangeghost.x && pacman->y == orangeghost.y) ||
+            (pacman->x == pinkghost.x && pacman->y == pinkghost.y) || (pacman->x == blueghost.x && pacman->y == blueghost.y)) && (pacman->mode == CHOMPER)){
+        scoreboard->score += 200;
+    }
     else if(tile_map[pacman->y][pacman->x] == 47){ // Powerup 
         tile_map[pacman->y][pacman->x] = 45;
         scoreboard->score += 50;
@@ -1865,9 +2003,31 @@ void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState r
         // Count to 6 seconds then set pacmans mode back to normal (chomper_isr)
         timer0_hw->alarm[2] = timer0_hw->timerawl + 6000000; 
     }
-    else if(((pacman->x == redghost.x && pacman->y == redghost.y) ||(pacman->x == orangeghost.x && pacman->y == orangeghost.y) ||
-            (pacman->x == pinkghost.x && pacman->y == pinkghost.y) || (pacman->x == blueghost.x && pacman->y == blueghost.y)) && (pacman->mode == CHOMPER)){
-        scoreboard += 200;
+}
+
+// void init_ghostunlock_timer(){
+//     irq_set_exclusive_handler(TIMER0_IRQ_3, ghostunlock_isr);
+//     timer0_hw->inte |= (1u << 3);
+//     irq_set_enabled(TIMER0_IRQ_3, true);
+    
+// }
+
+// void ghostunlock_isr(){
+//     // Acknowldege interrupt
+//     timer0_hw->intr |= (1u << 3);
+
+//     if(redghost.unlock_counter)
+// }
+
+void update_ghost(GhostState* ghost, PacmanState pacman){
+    ghost->lastx = ghost->x;
+    ghost->lasty = ghost->y;
+
+    if((pacman.mode == CHOMPER) && (ghost->x == pacman.x) && (ghost->y == pacman.y)){
+        ghost->x = (ghost->color == COLOR_ORANGE || ghost->color == COLOR_RED) ? HOUSE_START_LEFT_X : HOUSE_START_RIGHT_X;
+        ghost->y = (ghost->color == COLOR_ORANGE || ghost->color == COLOR_RED) ? HOUSE_START_LEFT_Y : HOUSE_START_RIGHT_Y;
+
+        // TODO : trigger alarm then count down to unlock ghosts (teleport them outside after 4 seconds)
     }
 
 }
