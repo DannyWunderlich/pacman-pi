@@ -1,3 +1,4 @@
+#include "stdio.h"
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/gpio.h"
@@ -1747,7 +1748,7 @@ void draw_start_screen(){
     sleep_ms(500);
 }
 
-GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost){
+GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost){
     if (keyevent & (1 << 8)) {
         char button = (char) (keyevent & 0xFF);
         if(button == '*'){
@@ -1767,8 +1768,9 @@ GameState check_start_pressed(uint16_t keyevent, InputState* current_input, Pacm
         // Draw initial ghost pos
         draw_ghost(redghost, pacman);
         draw_ghost(pinkghost, pacman);
-        draw_ghost(blueghost, pacman);
-        draw_ghost(orangeghost, pacman);
+        
+        // draw_ghost(blueghost, pacman);
+        // draw_ghost(orangeghost, pacman);
         
         return GAMEPLAY;
     }
@@ -1909,9 +1911,62 @@ void draw_ghost(GhostState ghost, PacmanState pacman){
     }
 }
 
-GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost, ScoreBoard* scoreboard){
-    if(((pacman.x == redghost.x && pacman.y == redghost.y) || (pacman.x == pinkghost.x && pacman.y == pinkghost.y) || 
-       (pacman.x == blueghost.x && pacman.y == blueghost.y) || (pacman.x == orangeghost.x && pacman.y == orangeghost.y)) && pacman.mode == NORMAL) {
+void redraw_black_in_house(GhostState ghost){
+    uint16_t fill_color = BLACK;
+    
+    uint16_t x0;
+    uint16_t y0;
+    uint16_t x1;
+    uint16_t y1;
+
+    if(ghost.color == COLOR_RED && (ghost.x == OUT_START_LEFT_X && ghost.y == OUT_START_LEFT_Y)){
+        // Redraw black inside the left house spot
+        x0 = HOUSE_START_LEFT_X * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = (x0 + (TILE_WIDTH * 2) - 1);
+        y0 = HOUSE_START_LEFT_Y * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+
+    }
+    else if(ghost.color == COLOR_PINK && (ghost.x == OUT_START_LEFT_X && ghost.y == OUT_START_LEFT_Y)){
+        // Redraw black inside the right house spot
+        x0 = HOUSE_START_RIGHT_X * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = (x0 + (TILE_WIDTH * 2) - 1);
+        y0 = HOUSE_START_RIGHT_Y * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+    }
+}
+
+GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, ScoreBoard* scoreboard){
+    if(((pacman.x == redghost.x && pacman.y == redghost.y) || (pacman.x == pinkghost.x && pacman.y == pinkghost.y) 
+        && pacman.mode == NORMAL)) {
         
         scoreboard->lives -= 1;
         if(scoreboard->lives == 0){
@@ -1981,7 +2036,7 @@ void chomper_isr(){
     pacman.mode = NORMAL;
 }
 
-void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState orangeghost, GhostState pinkghost, GhostState blueghost){
+void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState pinkghost){
 
     if(tile_map[pacman->y][pacman->x] == 46){ // Pellet
         tile_map[pacman->y][pacman->x] = 45;
@@ -1989,8 +2044,8 @@ void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState r
         scoreboard->total_food -= 1;
         scoreboard->score += 10;
     }
-    else if(((pacman->x == redghost.x && pacman->y == redghost.y) ||(pacman->x == orangeghost.x && pacman->y == orangeghost.y) ||
-            (pacman->x == pinkghost.x && pacman->y == pinkghost.y) || (pacman->x == blueghost.x && pacman->y == blueghost.y)) && (pacman->mode == CHOMPER)){
+    else if(((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y) 
+    && (pacman->mode == CHOMPER))){
         scoreboard->score += 200;
     }
     else if(tile_map[pacman->y][pacman->x] == 47){ // Powerup 
@@ -2005,29 +2060,123 @@ void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState r
     }
 }
 
-// void init_ghostunlock_timer(){
-//     irq_set_exclusive_handler(TIMER0_IRQ_3, ghostunlock_isr);
-//     timer0_hw->inte |= (1u << 3);
-//     irq_set_enabled(TIMER0_IRQ_3, true);
+void init_ghostunlock_timer(){
+    irq_set_exclusive_handler(TIMER1_IRQ_2, ghostunlock_isr);
+    timer1_hw->inte |= (1u << 2);
+    irq_set_enabled(TIMER1_IRQ_2, true);
+
+    // Ghost unlock value decrements every 1 second if it is in the house (repeating interrupt)
+    timer1_hw->alarm[2] = timer1_hw->timerawl + 1000000; 
     
-// }
+}
 
-// void ghostunlock_isr(){
-//     // Acknowldege interrupt
-//     timer0_hw->intr |= (1u << 3);
+void ghostunlock_isr(){
+    // Acknowldege interrupt
+    timer1_hw->intr |= (1u << 2);
 
-//     if(redghost.unlock_counter)
-// }
+    if(redghost.location == IN_HOUSE){
+        redghost.unlock_counter = (redghost.unlock_counter + 1) % 6;
+        if(redghost.unlock_counter == 5){
+            redghost.location = OUT_HOUSE;
+            // redghost.lastx = redghost.x;
+            // redghost.lasty = redghost.y;
+            redghost.x = OUT_START_LEFT_X;
+            redghost.y = OUT_START_LEFT_Y;
+        }
+    }
+    else{
+        redghost.unlock_counter = 0;
+        // printf("RED COUNT : %d\n", redghost.unlock_counter);
+    }
+
+    if(pinkghost.location == IN_HOUSE){
+        pinkghost.unlock_counter = (pinkghost.unlock_counter + 1) % 6;
+        if(pinkghost.unlock_counter == 5){
+            pinkghost.location = OUT_HOUSE;
+            // pinkghost.lastx = pinkghost.x;
+            // pinkghost.lasty = pinkghost.y;
+            pinkghost.x = OUT_START_RIGHT_X;
+            pinkghost.y = OUT_START_RIGHT_Y;
+        }
+    }
+    else{
+        pinkghost.unlock_counter = 0;
+        // printf("PINK COUNT : %d\n", redghost.unlock_counter);
+    }
+
+    timer1_hw->alarm[2] = timer1_hw->timerawl + 1000000;
+}
 
 void update_ghost(GhostState* ghost, PacmanState pacman){
+    // if((ghost->location != IN_HOUSE)){
+    //     ghost->lastx = ghost->x;
+    //     ghost->lasty = ghost->y;
+    // }
+    // else{
+    //     ghost->lastx = ghost->x;
+    //     ghost->lasty = ghost->y;
+    // }
+
     ghost->lastx = ghost->x;
     ghost->lasty = ghost->y;
 
-    if((pacman.mode == CHOMPER) && (ghost->x == pacman.x) && (ghost->y == pacman.y)){
+    if(ghost->location == IN_HOUSE){
         ghost->x = (ghost->color == COLOR_ORANGE || ghost->color == COLOR_RED) ? HOUSE_START_LEFT_X : HOUSE_START_RIGHT_X;
         ghost->y = (ghost->color == COLOR_ORANGE || ghost->color == COLOR_RED) ? HOUSE_START_LEFT_Y : HOUSE_START_RIGHT_Y;
+    }
+    else{
+        // If the ghost is eaten, teleport them back inside the house
+        if ((pacman.mode == CHOMPER) && (ghost->x == pacman.x) && (ghost->y == pacman.y)){
+            ghost->x = (ghost->color == COLOR_RED) ? HOUSE_START_LEFT_X : HOUSE_START_RIGHT_X;
+            ghost->y = (ghost->color == COLOR_RED) ? HOUSE_START_LEFT_Y : HOUSE_START_RIGHT_Y;
+            ghost->location = IN_HOUSE;
+        }
+        // Otherwise, ghosts follow ai random path
+        else {
 
-        // TODO : trigger alarm then count down to unlock ghosts (teleport them outside after 4 seconds)
+            int dx[] = {0, -1, 0, 1}; // UP, LEFT, DOWN, RIGHT
+            int dy[] = {-1, 0, 1, 0};
+
+            // 1. Check if the tile directly in front of us is clear
+            int next_x = ghost->x + dx[ghost->direction];
+            int next_y = ghost->y + dy[ghost->direction];
+    
+            bool can_move_forward = false;
+            if (next_x >= 0 && next_x < NUM_TILES_X && next_y >= 0 && next_y < NUM_TILES_Y) {
+                if (tile_map[next_y][next_x] >= 45) { // 45+ are non-wall tiles
+                    can_move_forward = true;
+                }
+            }
+
+            // 2. If we hit a wall OR we are at an intersection, pick a new direction
+            // (We use a simple probability to decide to turn at intersections)
+            if (!can_move_forward || (rand() % 10 == 0)) { 
+                int attempts = 0;
+                int new_dir = rand() % 4;
+        
+                // Try different directions until we find one that isn't a wall
+                while (attempts < 8) {
+                    int test_x = ghost->x + dx[new_dir];
+                    int test_y = ghost->y + dy[new_dir];
+            
+                    if (test_x >= 0 && test_x < NUM_TILES_X && test_y >= 0 && test_y < NUM_TILES_Y) {
+                        if (tile_map[test_y][test_x] >= 45) {
+                         // Avoid 180 turn unless we are totally stuck
+                            if (new_dir != (ghost->direction + 2) % 4 || attempts > 4) {
+                                ghost->direction = new_dir;
+                                break;
+                            }
+                        }
+                    }
+                    new_dir = (new_dir + 1) % 4;
+                    attempts++;
+        }
+    }
+        
+        ghost->x += dx[ghost->direction];
+        ghost->y += dy[ghost->direction];
+
+        }
     }
 
 }

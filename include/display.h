@@ -94,6 +94,7 @@ typedef struct{
     GhostColor color;
     GhostLocation location;
     uint8_t unlock_counter;
+    int direction; // (0: UP, 1: LEFT, 2: DOWN, 3: RIGHT)
 }GhostState;
 
 typedef struct{
@@ -114,8 +115,8 @@ void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1,
 void draw_map(void);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_start_screen();
-GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost);
-GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost, ScoreBoard* scoreboard);
+GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost);
+GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, ScoreBoard* scoreboard);
 void draw_end_screen();
 
 // Pacman Functions
@@ -123,10 +124,13 @@ void update_pacman(InputState controls, PacmanState* pacman);
 void draw_pacman(InputState controls, PacmanState pacman);
 
 // Ghost Functions
+void update_ghost(GhostState* ghost, PacmanState pacman);
 void draw_ghost(GhostState ghost, PacmanState pacman);
+void init_ghostunlock_timer();
+void ghostunlock_isr();
 
 // Scoreboarding Functions
-void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState orangeghost, GhostState pinkghost, GhostState blueghost);
+void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState pinkghost);
 void init_chomper_timer();
 void chomper_isr();
 
@@ -136,9 +140,9 @@ extern uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
 // Global Pacman, Ghost, and scoreboard
 extern volatile PacmanState pacman;
 extern volatile ScoreBoard scoreboard;
-// extern volatile GhostState redghost;
+extern volatile GhostState redghost;
 // extern volatile GhostState orangeghost;
-// extern volatile GhostState pinkghost;
+extern volatile GhostState pinkghost;
 // extern volatile GhostState blueghost;
 
 #endif
