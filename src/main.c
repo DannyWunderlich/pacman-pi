@@ -110,6 +110,9 @@ int main(){
     keypad_init_pins();
     keypad_init_timer();
 
+    // Init joysitck and buttons
+    controls_init();
+
     // Initialize the Chomper interrupt (mode for when you pick up a powerup)
     init_chomper_timer();
 
@@ -141,6 +144,9 @@ int main(){
         }
         // FOR TESTING WITH KEYPAD ^ =======
 
+        controls_update();
+        current_input = controls_get();
+
 
         if(game_state == STARTING_MENU)
         {       
@@ -149,12 +155,19 @@ int main(){
 
             // Pop a key and check if start ('*') is pressed
             keyevent = key_pop();
+            controls_update();
+            current_input = controls_get();
+            
             game_state = check_start_pressed(keyevent, &current_input, pacman, pinkghost, redghost, blueghost, orangeghost);
+
+            // TODO : ADD SOUND1
         }
         else if(game_state == GAME_OVER){
             tft_fill_screen(BLACK);
 
             draw_end_screen();
+
+            // TODO : add sound 3
         }
 
         // TODO : Add idle state where we wait for the first input to start the game
@@ -181,11 +194,13 @@ int main(){
         // Check pacman collision w/ ghosts
         game_state = check_collision(pacman, redghost, pinkghost, blueghost, orangeghost, &scoreboard);
 
+        // TODO : Add sound 2
+
         sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
 
-        // printf("SCORE: %d\n", scoreboard.score);
-        // printf("PELLETS: %d\n", scoreboard.num_pellets);
-        // printf("POWERS: %d\n", scoreboard.num_powers);
+        printf("SCORE: %d\n", scoreboard.score);
+        printf("PELLETS: %d\n", scoreboard.num_pellets);
+        printf("POWERS: %d\n", scoreboard.num_powers);
         }
     }
 }
