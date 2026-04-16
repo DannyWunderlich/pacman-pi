@@ -47,35 +47,43 @@ volatile PacmanState pacman = {
 };
 
 GhostState redghost = {
-    .y = 14,
-    .x = 12,
-    .lasty = 14,
-    .lastx = 12,
-    .color = COLOR_RED
+    .y = HOUSE_START_LEFT_Y,
+    .x = HOUSE_START_LEFT_X,
+    .lasty = HOUSE_START_LEFT_Y,
+    .lastx = HOUSE_START_LEFT_X,
+    .color = COLOR_RED,
+    .location = IN_HOUSE,
+    .unlock_counter = 6
 };
 
 GhostState pinkghost = {
-    .y = 14,
-    .x = 15,
-    .lasty = 14,
-    .lastx = 15,
-    .color = COLOR_PINK
+    .y = HOUSE_START_RIGHT_Y,
+    .x = HOUSE_START_RIGHT_X,
+    .lasty = HOUSE_START_RIGHT_Y,
+    .lastx = HOUSE_START_RIGHT_X,
+    .color = COLOR_PINK,
+    .location = IN_HOUSE,
+    .unlock_counter = 6
 };
 
 GhostState blueghost = {
-    .y = 11,
-    .x = 18,
-    .lasty = 11,
-    .lastx = 18,
-    .color = COLOR_BLUE
+    .y = OUT_START_RIGHT_Y,
+    .x = OUT_START_RIGHT_X,
+    .lasty = OUT_START_RIGHT_Y,
+    .lastx = OUT_START_RIGHT_X,
+    .color = COLOR_BLUE,
+    .location = OUT_HOUSE,
+    .unlock_counter = 6
 };
 
 GhostState orangeghost = {
-    .y = 11,
-    .x = 9,
-    .lasty = 11,
-    .lastx = 9,
-    .color = COLOR_ORANGE
+    .y = OUT_START_LEFT_Y,
+    .x = OUT_START_LEFT_X,
+    .lasty = OUT_START_LEFT_Y,
+    .lastx = OUT_START_LEFT_X,
+    .color = COLOR_ORANGE,
+    .location = OUT_HOUSE,
+    .unlock_counter = 6
 };
 
 volatile ScoreBoard scoreboard = {
@@ -104,6 +112,9 @@ int main(){
 
     // Initialize the Chomper interrupt (mode for when you pick up a powerup)
     init_chomper_timer();
+
+    // Initialize ghost cage unlock timer
+    // init_ghostunlock_timer();
     
     // Game loop
     for(;;){
@@ -146,32 +157,35 @@ int main(){
             draw_end_screen();
         }
 
+        // TODO : Add idle state where we wait for the first input to start the game
+
         else if(game_state == GAMEPLAY){
 
         // Update Pacman pos
         update_pacman(current_input, &pacman);
 
-        // TODO : Update Scoreboard
+        // Update Scoreboard
         update_scoreboard(&pacman, &scoreboard, redghost, orangeghost, pinkghost, blueghost);
+        
         // TODO : Update Ghost Pos
 
         // Draw Pacman updated pos
         draw_pacman(current_input, pacman);
 
-        // Draw Ghost Pos
-        draw_ghost(redghost);
-        draw_ghost(blueghost);
-        draw_ghost(pinkghost);
-        draw_ghost(orangeghost);
+        // Draw Ghost updated pos
+        draw_ghost(redghost, pacman);
+        draw_ghost(blueghost, pacman);
+        draw_ghost(pinkghost, pacman);
+        draw_ghost(orangeghost, pacman);
 
         // Check pacman collision w/ ghosts
         game_state = check_collision(pacman, redghost, pinkghost, blueghost, orangeghost, &scoreboard);
 
         sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
 
-        printf("SCORE: %d\n", scoreboard.score);
-        printf("PELLETS: %d\n", scoreboard.num_pellets);
-        printf("POWERS: %d\n", scoreboard.num_powers);
+        // printf("SCORE: %d\n", scoreboard.score);
+        // printf("PELLETS: %d\n", scoreboard.num_pellets);
+        // printf("POWERS: %d\n", scoreboard.num_powers);
         }
     }
 }
