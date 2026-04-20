@@ -1154,6 +1154,8 @@ const uint8_t initial_tile_map[NUM_TILES_Y][NUM_TILES_X] = {
 
 uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {0};
 
+// extern char font[];
+
 void tft_write_command(uint8_t cmd){
     gpio_put(TFT_DC, 0); // Command mode
     gpio_put(TFT_SPI_CSN, 0);
@@ -1185,6 +1187,82 @@ void tft_set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) 
 
     // Write to RAM
     tft_write_command(0x2C);
+}
+
+void ssd_init_spi() {
+    // fill in 
+    gpio_init(SSD_SPI_SCK);
+    gpio_init(SSD_SPI_CSN);
+    gpio_init(SSD_SPI_MOSI);
+    
+    gpio_set_function(SSD_SPI_SCK, GPIO_FUNC_SPI);
+    gpio_set_function(SSD_SPI_CSN, GPIO_FUNC_SPI);
+    gpio_set_function(SSD_SPI_MOSI, GPIO_FUNC_SPI);
+
+    spi_init(spi1, 125000);
+    spi_set_format(spi1, 16, 0, 0, SPI_MSB_FIRST);  
+    
+}
+
+uint16_t __attribute__((aligned(16))) msg[8] = {
+    (0 << 8) | 0x3F, // seven-segment value of 0
+    (1 << 8) | 0x06, // seven-segment value of 1
+    (2 << 8) | 0x5B, // seven-segment value of 2
+    (3 << 8) | 0x4F, // seven-segment value of 3
+    (4 << 8) | 0x66, // seven-segment value of 4
+    (5 << 8) | 0x6D, // seven-segment value of 5
+    (6 << 8) | 0x7D, // seven-segment value of 6
+    (7 << 8) | 0x07, // seven-segment value of 7
+};
+
+void ssd_display_score(ScoreBoard scoreboard) {
+
+    // font array for number mapping
+    char font[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x67};
+    // 1. Extract digits for Score (0-255)
+    uint8_t score_h = (scoreboard.score / 100) % 10;
+    uint8_t score_t = (scoreboard.score / 10) % 10;
+    uint8_t score_o = scoreboard.score % 10;
+
+    // 2. Map Score to positions 0, 1, 2
+    // We use the font[] array to get the 7-segment bitmask
+    msg[0] = (0 << 8) | font[score_h];
+    msg[1] = (1 << 8) | font[score_t];
+    msg[2] = (2 << 8) | font[score_o];
+
+    // 3. Clear middle displays (Positions 3, 4, 5, 6)
+    // Assuming font[10] or a manual 0x00 represents a blank display
+    for (int i = 3; i <= 6; i++) {
+        msg[i] = (i << 8) | 0x00; 
+    }
+
+    // 4. Map Lives to position 7
+    uint8_t lives_digit = scoreboard.lives % 10;
+    msg[7] = (7 << 8) | font[lives_digit];
+
+    spi_write16_blocking(spi1, msg, 8);
+}
+
+bool ssd_timer_callback(struct repeating_timer *t) {
+    ssd_display_score(scoreboard);
+    return true; // keep repeating
+}
+
+void init_scoreboard_timer(){
+    irq_set_exclusive_handler(TIMER1_IRQ_3, ghostunlock_isr);
+    timer1_hw->inte |= (1u << 3);
+    irq_set_enabled(TIMER1_IRQ_3, true);
+
+    timer1_hw->alarm[3] = timer1_hw->timerawl + 160000; 
+}
+
+void scoreboard_isr(){
+    timer1_hw->intr |= (1u << 3);
+
+    ssd_display_score(scoreboard);
+    printf("scoreboard update\n");
+
+    timer1_hw->alarm[3] = timer1_hw->timerawl + 160000; 
 }
 
 void display_init(){
