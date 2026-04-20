@@ -111,7 +111,7 @@ int main(){
     tft_fill_screen(BLACK);
     sleep_ms(100);
 
-    // Initialize the seven-segment display so we can display score and lives
+    // Initialize the seven-segment display and add scoring timer so we can display score and lives
     ssd_init_spi();
     add_repeating_timer_ms(2, ssd_timer_callback, NULL, &ssd_timer);
 
@@ -214,16 +214,7 @@ int main(){
 
         // TODO : Add sound 2
 
-        sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
-
-
-        // printf("SCORE: %d\n", scoreboard.score);
-        // printf("PELLETS: %d\n", scoreboard.num_pellets);
-        // printf("POWERS: %d\n", scoreboard.num_powers);
-
-
-        // ssd_display_score(scoreboard);
-        
+        sleep_ms(100); // Must wait so pacman doesnt move like hes on crack 
     }
     }
 }
