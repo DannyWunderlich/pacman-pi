@@ -38,32 +38,34 @@ InputState current_input = {
 
 // Pacman struct, contains initial position
 volatile PacmanState pacman = {
-    .y = 23,  //23
-    .x = 13,  //13
-    .lasty = 23,
-    .lastx = 13,
+    .y = PACMAN_START_Y,  //23
+    .x = PACMAN_START_X,  //13
+    .lasty = PACMAN_START_Y,
+    .lastx = PACMAN_START_X,
     .direction = FACING_RIGHT,
     .mode = NORMAL
 };
 
-GhostState redghost = {
+volatile GhostState redghost = {
     .y = HOUSE_START_LEFT_Y,
     .x = HOUSE_START_LEFT_X,
     .lasty = HOUSE_START_LEFT_Y,
     .lastx = HOUSE_START_LEFT_X,
     .color = COLOR_RED,
     .location = IN_HOUSE,
-    .unlock_counter = 6
+    .unlock_counter = 6,
+    .direction = 3
 };
 
-GhostState pinkghost = {
+volatile GhostState pinkghost = {
     .y = HOUSE_START_RIGHT_Y,
     .x = HOUSE_START_RIGHT_X,
     .lasty = HOUSE_START_RIGHT_Y,
     .lastx = HOUSE_START_RIGHT_X,
     .color = COLOR_PINK,
     .location = IN_HOUSE,
-    .unlock_counter = 6
+    .unlock_counter = 6,
+    .direction = 1
 };
 
 GhostState blueghost = {
@@ -73,7 +75,7 @@ GhostState blueghost = {
     .lastx = OUT_START_RIGHT_X,
     .color = COLOR_BLUE,
     .location = OUT_HOUSE,
-    .unlock_counter = 6
+    .unlock_counter = 0
 };
 
 GhostState orangeghost = {
@@ -83,7 +85,7 @@ GhostState orangeghost = {
     .lastx = OUT_START_LEFT_X,
     .color = COLOR_ORANGE,
     .location = OUT_HOUSE,
-    .unlock_counter = 6
+    .unlock_counter = 0
 };
 
 volatile ScoreBoard scoreboard = {
@@ -100,11 +102,18 @@ GameState game_state = STARTING_MENU;
 int main(){
     
     stdio_init_all();
+
+    // Seed with the current microsecond count since boot
+    srand(to_us_since_boot(get_absolute_time()));
     
     // Initialize the display and draw the map
     display_init();
     tft_fill_screen(BLACK);
     sleep_ms(100);
+
+    // Initialize the seven-segment display and add scoring timer so we can display score and lives
+    ssd_init_spi();
+    add_repeating_timer_ms(2, ssd_timer_callback, NULL, &ssd_timer);
 
     // Initialize keypad pins and timer for testing
     keypad_init_pins();
@@ -117,7 +126,10 @@ int main(){
     init_chomper_timer();
 
     // Initialize ghost cage unlock timer
-    // init_ghostunlock_timer();
+    init_ghostunlock_timer();
+
+    // Initialize the game map storing the pellet / powers data matrix
+    reset_game_map();
     
     // Game loop
     for(;;){
@@ -158,7 +170,7 @@ int main(){
             controls_update();
             current_input = controls_get();
             
-            game_state = check_start_pressed(keyevent, &current_input, pacman, pinkghost, redghost, blueghost, orangeghost);
+            game_state = check_start_pressed(keyevent, &current_input, pacman, pinkghost, redghost);
 
             // TODO : ADD SOUND1
         }
@@ -178,29 +190,31 @@ int main(){
         update_pacman(current_input, &pacman);
 
         // Update Scoreboard
-        update_scoreboard(&pacman, &scoreboard, redghost, orangeghost, pinkghost, blueghost);
+        update_scoreboard(&pacman, &scoreboard, redghost, pinkghost);
         
-        // TODO : Update Ghost Pos
+        // Redraw Black in House
+        redraw_black_in_house(redghost);
+        redraw_black_in_house(pinkghost);
+
+        // Update Ghost Pos
+        update_ghost(&redghost, pacman);
+        update_ghost(&pinkghost, pacman);
 
         // Draw Pacman updated pos
         draw_pacman(current_input, pacman);
 
         // Draw Ghost updated pos
         draw_ghost(redghost, pacman);
-        draw_ghost(blueghost, pacman);
+        // draw_ghost(blueghost, pacman);
         draw_ghost(pinkghost, pacman);
-        draw_ghost(orangeghost, pacman);
+        // draw_ghost(orangeghost, pacman);
 
         // Check pacman collision w/ ghosts
-        game_state = check_collision(pacman, redghost, pinkghost, blueghost, orangeghost, &scoreboard);
+        game_state = check_collision(&pacman, &redghost, &pinkghost, &scoreboard);
 
         // TODO : Add sound 2
 
-        sleep_ms(100); // Must wait so pacman doesnt move like hes on crack
-
-        printf("SCORE: %d\n", scoreboard.score);
-        printf("PELLETS: %d\n", scoreboard.num_pellets);
-        printf("POWERS: %d\n", scoreboard.num_powers);
-        }
+        sleep_ms(100); // Must wait so pacman doesnt move like hes on crack 
+    }
     }
 }

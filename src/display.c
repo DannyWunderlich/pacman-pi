@@ -1,3 +1,4 @@
+#include "stdio.h"
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/gpio.h"
@@ -7,6 +8,17 @@
 // =============================================================================
 // TILE SPRITES ==> https://www.spriters-resource.com/arcade/pacman/asset/73389/
 // =============================================================================
+
+const uint16_t tile_0[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE,
+WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE,
+WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
 
 const uint16_t tile_1[TILE_WIDTH * TILE_HEIGHT] = {
 BLUE, BLUE, BLUE, BLUE, BLACK, BLACK, BLACK, BLACK,
@@ -1106,41 +1118,7 @@ BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 //                              DEFAULT MAP
 // ==========================================================================
 
-//  uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {
-//     {2, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 44, 43, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 1,},
-//     {4, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 3,},
-//     {4, 45, 40, 16, 16, 39, 45, 40, 16, 16, 16, 39, 45, 26, 25, 45, 40, 16, 16, 16, 39, 45, 40, 16, 16, 39, 45, 3,}, 
-//     {4, 45, 26, 45, 45, 25, 45, 26, 45, 45, 45, 25, 45, 26, 25, 45, 26, 45, 45, 45, 25, 45, 26, 45, 45, 25, 45, 3,},
-//     {4, 45, 28, 21, 21, 27, 45, 28, 21, 21, 21, 27, 45, 28, 27, 45, 28, 21, 21, 21, 27, 45, 28, 21, 21, 27, 45, 3,},
-//     {4, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 3,},
-//     {4, 45, 40, 16, 16, 39, 45, 40, 39, 45, 40, 16, 16, 16, 16, 16, 16, 39, 45, 40, 39, 45, 40, 16, 16, 39, 45, 3,},
-//     {4, 45, 42, 21, 21, 41, 45, 26, 25, 45, 42, 21, 21, 36, 35, 21, 21, 41, 45, 26, 25, 45, 42, 21, 21, 41, 45, 3,},
-//     {4, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 45, 45, 3,},
-//     {6, 14, 14, 14, 14, 39, 45, 26, 37, 16, 16, 39, 45, 26, 25, 45, 24, 16, 16, 38, 25, 45, 40, 14, 14, 14, 14, 5,},
-//     {45, 45, 45, 45, 45, 4, 45, 26, 35, 21, 21, 27, 45, 42, 41, 45, 42, 21, 21, 36, 25, 45, 3, 45, 45, 45, 45, 45,},
-//     {45, 45, 45, 45, 45, 4, 45, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 45, 3, 45, 45, 45, 45, 45,},
-//     {45, 45, 45, 45, 45, 4, 45, 26, 25, 45, 30, 14, 34, 45, 45, 33, 14, 29, 45, 26, 25, 45, 3, 45, 45, 45, 45, 45,},
-//     {12, 12, 12, 12, 12, 27, 45, 42, 41, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 42, 41, 45, 28, 12, 12, 12, 12, 12,},
-//     {45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45,},
-//     {14, 14, 14, 14, 14, 39, 45, 40, 39, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 40, 39, 45, 24, 14, 14, 14, 14, 14,},
-//     {45, 45, 45, 45, 45, 4, 45, 26, 25, 45, 32, 12, 12, 12, 12, 12, 12, 31, 45, 26, 25, 45, 3, 45, 45, 45, 45, 45,},
-//     {45, 45, 45, 45, 45, 4, 45, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 45, 3, 45, 45, 45, 45, 45,},
-//     {45, 45, 45, 45, 45, 4, 45, 26, 25, 45, 40, 16, 16, 16, 16, 16, 16, 39, 45, 26, 25, 45, 3, 45, 45, 45, 45, 45,},
-//     {2, 12, 12, 12, 12, 27, 45, 28, 27, 45, 28, 21, 21, 36, 35, 21, 21, 27, 45, 28, 27, 45, 28, 12, 12, 12, 12, 1,},
-//     {4, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 3,},
-//     {4, 45, 24, 16, 16, 23, 45, 24, 16, 16, 16, 23, 45, 26, 25, 45, 24, 16, 16, 16, 23, 45, 24, 16, 16, 23, 45, 3,}, 
-//     {4, 45, 28, 21, 36, 25, 45, 28, 21, 21, 21, 27, 45, 28, 27, 45, 28, 21, 21, 21, 27, 45, 26, 35, 21, 27, 45, 3,},
-//     {4, 45, 45, 45, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 3,},
-//     {8, 16, 39, 45, 26, 25, 45, 40, 39, 45, 40, 16, 16, 16, 16, 16, 16, 39, 45, 40, 39, 45, 26, 25, 45, 40, 16, 7,},
-//     {10, 21, 27, 45, 28, 27, 45, 26, 25, 45, 28, 21, 21, 36, 35, 21, 21, 27, 45, 26, 25, 45, 28, 27, 45, 28, 21, 9,},
-//     {4, 45, 45, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 26, 25, 45, 45, 45, 45, 45, 45, 3,},
-//     {4, 45, 40, 16, 16, 16, 16, 38, 37, 16, 16, 39, 45, 26, 25, 45, 40, 16, 16, 38, 37, 16, 16, 16, 16, 39, 45, 3,}, 
-//     {4, 45, 28, 21, 21, 21, 21, 21, 21, 21, 21, 27, 45, 28, 27, 45, 28, 21, 21, 21, 21, 21, 21, 21, 21, 27, 45, 3,},
-//     {4, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 3,},
-//     {6, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 5,}
-// };
-
-uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {
+const uint8_t initial_tile_map[NUM_TILES_Y][NUM_TILES_X] = {
     {2, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 44, 43, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 1,},
     {4, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 26, 25, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 3,},
     {4, 46, 40, 16, 16, 39, 46, 40, 16, 16, 16, 39, 46, 26, 25, 46, 40, 16, 16, 16, 39, 46, 40, 16, 16, 39, 46, 3,}, 
@@ -1153,7 +1131,7 @@ uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {
     {6, 14, 14, 14, 14, 39, 46, 26, 37, 16, 16, 39, 45, 26, 25, 45, 24, 16, 16, 38, 25, 46, 40, 14, 14, 14, 14, 5,},
     {45, 45, 45, 45, 45, 4, 46, 26, 35, 21, 21, 27, 45, 42, 41, 45, 42, 21, 21, 36, 25, 46, 3, 45, 45, 45, 45, 45,},
     {45, 45, 45, 45, 45, 4, 46, 26, 25, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 26, 25, 46, 3, 45, 45, 45, 45, 45,},
-    {45, 45, 45, 45, 45, 4, 46, 26, 25, 45, 30, 14, 34, 45, 45, 33, 14, 29, 45, 26, 25, 46, 3, 45, 45, 45, 45, 45,},
+    {45, 45, 45, 45, 45, 4, 46, 26, 25, 45, 30, 14, 34, 0, 0, 33, 14, 29, 45, 26, 25, 46, 3, 45, 45, 45, 45, 45,},
     {12, 12, 12, 12, 12, 27, 46, 42, 41, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 42, 41, 46, 28, 12, 12, 12, 12, 12,},
     {45, 45, 45, 45, 45, 45, 46, 45, 45, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 45, 45, 46, 45, 45, 45, 45, 45, 45,},
     {14, 14, 14, 14, 14, 39, 46, 40, 39, 45, 3, 45, 45, 45, 45, 45, 45, 4, 45, 40, 39, 46, 24, 14, 14, 14, 14, 14,},
@@ -1168,11 +1146,15 @@ uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {
     {8, 16, 39, 46, 26, 25, 46, 40, 39, 46, 40, 16, 16, 16, 16, 16, 16, 39, 46, 40, 39, 46, 26, 25, 46, 40, 16, 7,},
     {10, 21, 27, 46, 28, 27, 46, 26, 25, 46, 28, 21, 21, 36, 35, 21, 21, 27, 46, 26, 25, 46, 28, 27, 46, 28, 21, 9,},
     {4, 46, 46, 46, 46, 46, 46, 26, 25, 46, 46, 46, 46, 26, 25, 46, 46, 46, 46, 26, 25, 46, 46, 46, 46, 46, 46, 3,},
-    {4, 46, 40, 16, 16, 16, 16, 38, 37, 16, 16, 39, 46, 26, 25, 46, 40, 16, 16, 38, 37, 16, 16, 16, 16, 39, 46, 3,}, 
+    {4, 46, 40, 16, 16, 16, 16, 38, 37, 16, 16, 39, 46, 26, 25, 46, 40, 16, 16, 38, 37, 16, 16, 16, 16, 39, 46, 3,},
     {4, 46, 28, 21, 21, 21, 21, 21, 21, 21, 21, 27, 46, 28, 27, 46, 28, 21, 21, 21, 21, 21, 21, 21, 21, 27, 46, 3,},
     {4, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 3,},
     {6, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 5,}
 };
+
+uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {0};
+
+// extern char font[];
 
 void tft_write_command(uint8_t cmd){
     gpio_put(TFT_DC, 0); // Command mode
@@ -1205,6 +1187,60 @@ void tft_set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) 
 
     // Write to RAM
     tft_write_command(0x2C);
+}
+
+void ssd_init_spi() {
+    // fill in 
+    gpio_init(SSD_SPI_SCK);
+    gpio_init(SSD_SPI_CSN);
+    gpio_init(SSD_SPI_MOSI);
+    
+    gpio_set_function(SSD_SPI_SCK, GPIO_FUNC_SPI);
+    gpio_set_function(SSD_SPI_CSN, GPIO_FUNC_SPI);
+    gpio_set_function(SSD_SPI_MOSI, GPIO_FUNC_SPI);
+
+    spi_init(spi1, 125000);
+    spi_set_format(spi1, 16, 0, 0, SPI_MSB_FIRST);  
+    
+}
+
+uint16_t __attribute__((aligned(16))) msg[8] = {
+    (0 << 8) | 0x3F, // seven-segment value of 0
+    (1 << 8) | 0x06, // seven-segment value of 1
+    (2 << 8) | 0x5B, // seven-segment value of 2
+    (3 << 8) | 0x4F, // seven-segment value of 3
+    (4 << 8) | 0x66, // seven-segment value of 4
+    (5 << 8) | 0x6D, // seven-segment value of 5
+    (6 << 8) | 0x7D, // seven-segment value of 6
+    (7 << 8) | 0x07, // seven-segment value of 7
+};
+
+void ssd_display_score(ScoreBoard scoreboard) {
+
+    // font array for number mapping
+    char font[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x67};
+
+    uint8_t score_h = (scoreboard.score / 100) % 10;
+    uint8_t score_t = (scoreboard.score / 10) % 10;
+    uint8_t score_o = scoreboard.score % 10;
+
+    msg[0] = (0 << 8) | font[score_h];
+    msg[1] = (1 << 8) | font[score_t];
+    msg[2] = (2 << 8) | font[score_o];
+
+    for (int i = 3; i <= 6; i++) {
+        msg[i] = (i << 8) | 0x00; 
+    }
+
+    uint8_t lives_digit = scoreboard.lives % 10;
+    msg[7] = (7 << 8) | font[lives_digit];
+
+    spi_write16_blocking(spi1, msg, 8);
+}
+
+bool ssd_timer_callback(struct repeating_timer *t) {
+    ssd_display_score(scoreboard);
+    return true; // keep repeating
 }
 
 void display_init(){
@@ -1318,6 +1354,9 @@ void draw_map(){
             tile_sel = tile_map[i][j];
 
             switch(tile_sel){ // --> Can just change the map to a 2d array of pointers so we dont need this long switch case
+                case(0):
+                    tileptr = tile_0;
+                    break;
                 case(1):
                     tileptr = tile_1;
                     break;
@@ -1467,6 +1506,10 @@ void draw_map(){
             // sleep_ms(5);
         }
     }
+}
+
+void reset_game_map() {
+    memcpy(tile_map, initial_tile_map, sizeof(tile_map));
 }
 
 void update_pacman(InputState controls, PacmanState* pacman){
@@ -1747,7 +1790,7 @@ void draw_start_screen(){
     sleep_ms(500);
 }
 
-GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost){
+GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost){
     if (keyevent & (1 << 8)) {
         char button = (char) (keyevent & 0xFF);
         if(button == '*'){
@@ -1767,8 +1810,11 @@ GameState check_start_pressed(uint16_t keyevent, InputState* current_input, Pacm
         // Draw initial ghost pos
         draw_ghost(redghost, pacman);
         draw_ghost(pinkghost, pacman);
-        draw_ghost(blueghost, pacman);
-        draw_ghost(orangeghost, pacman);
+
+        // 
+        
+        // draw_ghost(blueghost, pacman);
+        // draw_ghost(orangeghost, pacman);
         
         return GAMEPLAY;
     }
@@ -1847,6 +1893,7 @@ void draw_ghost(GhostState ghost, PacmanState pacman){
         }
 
         gpio_put(TFT_SPI_CSN, 1);
+
     }
     else if(ghost.lastx > ghost.x){
         x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET + (TILE_WIDTH / 2);
@@ -1907,15 +1954,104 @@ void draw_ghost(GhostState ghost, PacmanState pacman){
 
         gpio_put(TFT_SPI_CSN, 1);
     }
+
+     // Write a pellet / power if it is there --> Makes the ghosts look a little weird but whatever
+    if(tile_map[ghost.lasty][ghost.lastx] == 46 || tile_map[ghost.lasty][ghost.lastx] == 47){
+        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET;
+        y0 = ghost.lasty * TILE_HEIGHT;
+        x1 = x0 + TILE_WIDTH - 1;
+        y1 = y0 + TILE_HEIGHT - 1;
+
+        tile_map[ghost.lasty][ghost.lastx] == 46 ? tft_write_tile(tile_46, x0, y0, x1, y1) :
+                                                   tft_write_tile(tile_47, x0, y0, x1, y1);
+
+    }
 }
 
-GameState check_collision(PacmanState pacman, GhostState redghost, GhostState pinkghost, GhostState blueghost, GhostState orangeghost, ScoreBoard* scoreboard){
-    if(((pacman.x == redghost.x && pacman.y == redghost.y) || (pacman.x == pinkghost.x && pacman.y == pinkghost.y) || 
-       (pacman.x == blueghost.x && pacman.y == blueghost.y) || (pacman.x == orangeghost.x && pacman.y == orangeghost.y)) && pacman.mode == NORMAL) {
+void redraw_black_in_house(GhostState ghost){
+    uint16_t fill_color = BLACK;
+    
+    uint16_t x0;
+    uint16_t y0;
+    uint16_t x1;
+    uint16_t y1;
+
+    if(ghost.color == COLOR_RED && (ghost.x == OUT_START_LEFT_X && ghost.y == OUT_START_LEFT_Y)){
+        // Redraw black inside the left house spot
+        x0 = HOUSE_START_LEFT_X * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = (x0 + (TILE_WIDTH * 2) - 1);
+        y0 = HOUSE_START_LEFT_Y * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+
+    }
+    else if(ghost.color == COLOR_PINK && (ghost.x == OUT_START_RIGHT_X && ghost.y == OUT_START_RIGHT_Y)){
+        // Redraw black inside the right house spot
+        x0 = HOUSE_START_RIGHT_X * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
+        x1 = (x0 + (TILE_WIDTH * 2) - 1);
+        y0 = HOUSE_START_RIGHT_Y * TILE_HEIGHT - (TILE_HEIGHT / 2);
+        y1 = y0 + (2 * TILE_HEIGHT - 1);
+
+        tft_set_address_window(x0, y0, x1, y1);
+        uint8_t hi = (uint8_t)(fill_color >> 8);
+        uint8_t lo = (uint8_t)(fill_color & 0xFF);
+
+        gpio_put(TFT_DC, 1);
+        gpio_put(TFT_SPI_CSN, 0);
+
+        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
+            spi_write_blocking(spi0, &hi, 1);
+            spi_write_blocking(spi0, &lo, 1);
+        }
+
+        gpio_put(TFT_SPI_CSN, 1);
+    }
+}
+
+GameState check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost, ScoreBoard* scoreboard){
+    if(((pacman->x == redghost->x && pacman->y == redghost->y) || (pacman->x == pinkghost->x && pacman->y == pinkghost->y) 
+        && pacman->mode == NORMAL)) {
         
         scoreboard->lives -= 1;
         if(scoreboard->lives == 0){
             return GAME_OVER;
+        }
+        else{
+            redghost->x = HOUSE_START_LEFT_X;
+            redghost->y = HOUSE_START_LEFT_Y;
+            redghost->location = IN_HOUSE;
+
+            pinkghost->x = HOUSE_START_RIGHT_X;
+            pinkghost->y = HOUSE_START_RIGHT_Y;
+            pinkghost->location = IN_HOUSE;
+
+            // TODO : Respawn pellets, reset pacman location, redraw updated map
+            reset_game_map();
+
+            scoreboard->num_pellets = 237;
+            scoreboard->num_powers = 4;
+
+            pacman->x = PACMAN_START_X;
+            pacman->y = PACMAN_START_Y;
+            pacman->lastx = PACMAN_START_X;
+            pacman->lasty = PACMAN_START_Y;
+
+            draw_map();
+
+            return GAMEPLAY;
         }
         // TODO : else we have to restart the level
        }
@@ -1981,7 +2117,7 @@ void chomper_isr(){
     pacman.mode = NORMAL;
 }
 
-void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState orangeghost, GhostState pinkghost, GhostState blueghost){
+void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState pinkghost){
 
     if(tile_map[pacman->y][pacman->x] == 46){ // Pellet
         tile_map[pacman->y][pacman->x] = 45;
@@ -1989,8 +2125,8 @@ void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState r
         scoreboard->total_food -= 1;
         scoreboard->score += 10;
     }
-    else if(((pacman->x == redghost.x && pacman->y == redghost.y) ||(pacman->x == orangeghost.x && pacman->y == orangeghost.y) ||
-            (pacman->x == pinkghost.x && pacman->y == pinkghost.y) || (pacman->x == blueghost.x && pacman->y == blueghost.y)) && (pacman->mode == CHOMPER)){
+    else if(((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y) 
+    && (pacman->mode == CHOMPER))){
         scoreboard->score += 200;
     }
     else if(tile_map[pacman->y][pacman->x] == 47){ // Powerup 
@@ -2005,29 +2141,127 @@ void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState r
     }
 }
 
-// void init_ghostunlock_timer(){
-//     irq_set_exclusive_handler(TIMER0_IRQ_3, ghostunlock_isr);
-//     timer0_hw->inte |= (1u << 3);
-//     irq_set_enabled(TIMER0_IRQ_3, true);
+void init_ghostunlock_timer(){
+    irq_set_exclusive_handler(TIMER1_IRQ_2, ghostunlock_isr);
+    timer1_hw->inte |= (1u << 2);
+    irq_set_enabled(TIMER1_IRQ_2, true);
+
+    // Ghost unlock value decrements every 1 second if it is in the house (repeating interrupt)
+    timer1_hw->alarm[2] = timer1_hw->timerawl + 1000000; 
     
-// }
+}
 
-// void ghostunlock_isr(){
-//     // Acknowldege interrupt
-//     timer0_hw->intr |= (1u << 3);
+void ghostunlock_isr(){
+    // Acknowldege interrupt
+    timer1_hw->intr |= (1u << 2);
 
-//     if(redghost.unlock_counter)
-// }
+    if(redghost.location == IN_HOUSE){
+        redghost.unlock_counter = (redghost.unlock_counter + 1) % 6;
+        if(redghost.unlock_counter == 5){
+            redghost.location = OUT_HOUSE;
+            // redghost.lastx = redghost.x;
+            // redghost.lasty = redghost.y;
+            redghost.x = OUT_START_LEFT_X;
+            redghost.y = OUT_START_LEFT_Y;
+
+            redraw_black_in_house(redghost);
+        }
+    }
+    else{
+        redghost.unlock_counter = 0;
+        // printf("RED COUNT : %d\n", redghost.unlock_counter);
+    }
+
+    if(pinkghost.location == IN_HOUSE){
+        pinkghost.unlock_counter = (pinkghost.unlock_counter + 1) % 6;
+        if(pinkghost.unlock_counter == 5){
+            pinkghost.location = OUT_HOUSE;
+            // pinkghost.lastx = pinkghost.x;
+            // pinkghost.lasty = pinkghost.y;
+            pinkghost.x = OUT_START_RIGHT_X;
+            pinkghost.y = OUT_START_RIGHT_Y;
+
+            redraw_black_in_house(pinkghost);
+        }
+    }
+    else{
+        pinkghost.unlock_counter = 0;
+        // printf("PINK COUNT : %d\n", redghost.unlock_counter);
+    }
+
+    timer1_hw->alarm[2] = timer1_hw->timerawl + 1000000;
+}
 
 void update_ghost(GhostState* ghost, PacmanState pacman){
+    // if((ghost->location != IN_HOUSE)){
+    //     ghost->lastx = ghost->x;
+    //     ghost->lasty = ghost->y;
+    // }
+    // else{
+    //     ghost->lastx = ghost->x;
+    //     ghost->lasty = ghost->y;
+    // }
+
     ghost->lastx = ghost->x;
     ghost->lasty = ghost->y;
 
-    if((pacman.mode == CHOMPER) && (ghost->x == pacman.x) && (ghost->y == pacman.y)){
+    if(ghost->location == IN_HOUSE){
         ghost->x = (ghost->color == COLOR_ORANGE || ghost->color == COLOR_RED) ? HOUSE_START_LEFT_X : HOUSE_START_RIGHT_X;
         ghost->y = (ghost->color == COLOR_ORANGE || ghost->color == COLOR_RED) ? HOUSE_START_LEFT_Y : HOUSE_START_RIGHT_Y;
+    }
+    else{
+        // If the ghost is eaten, teleport them back inside the house
+        if ((pacman.mode == CHOMPER) && (ghost->x == pacman.x) && (ghost->y == pacman.y)){
+            ghost->x = (ghost->color == COLOR_RED) ? HOUSE_START_LEFT_X : HOUSE_START_RIGHT_X;
+            ghost->y = (ghost->color == COLOR_RED) ? HOUSE_START_LEFT_Y : HOUSE_START_RIGHT_Y;
+            ghost->location = IN_HOUSE;
+        }
+        // Otherwise, ghosts follow ai random path ==> DANNY : I used gemini for this part
+        else {
 
-        // TODO : trigger alarm then count down to unlock ghosts (teleport them outside after 4 seconds)
+            int dx[] = {0, -1, 0, 1}; // UP, LEFT, DOWN, RIGHT
+            int dy[] = {-1, 0, 1, 0};
+
+            // 1. Check if the tile directly in front of us is clear
+            int next_x = ghost->x + dx[ghost->direction];
+            int next_y = ghost->y + dy[ghost->direction];
+    
+            bool can_move_forward = false;
+            if (next_x >= 0 && next_x < NUM_TILES_X && next_y >= 0 && next_y < NUM_TILES_Y) {
+                if (tile_map[next_y][next_x] >= 45) { // 45+ are non-wall tiles
+                    can_move_forward = true;
+                }
+            }
+
+            // 2. If we hit a wall OR we are at an intersection, pick a new direction
+            // (We use a simple probability to decide to turn at intersections)
+            if (!can_move_forward || (rand() % 10 == 0)) { 
+                int attempts = 0;
+                int new_dir = rand() % 4;
+        
+                // Try different directions until we find one that isn't a wall
+                while (attempts < 8) {
+                    int test_x = ghost->x + dx[new_dir];
+                    int test_y = ghost->y + dy[new_dir];
+            
+                    if (test_x >= 0 && test_x < NUM_TILES_X && test_y >= 0 && test_y < NUM_TILES_Y) {
+                        if (tile_map[test_y][test_x] >= 45) {
+                         // Avoid 180 turn unless we are totally stuck
+                            if (new_dir != (ghost->direction + 2) % 4 || attempts > 4) {
+                                ghost->direction = new_dir;
+                                break;
+                            }
+                        }
+                    }
+                    new_dir = (new_dir + 1) % 4;
+                    attempts++;
+        }
+    }
+        
+        ghost->x += dx[ghost->direction];
+        ghost->y += dy[ghost->direction];
+
+        }
     }
 
 }
