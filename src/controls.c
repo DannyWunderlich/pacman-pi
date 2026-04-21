@@ -9,7 +9,7 @@
 static const uint16_t JOYSTICK_CENTER_X = 2048;
 static const uint16_t JOYSTICK_CENTER_Y = 2048;
 static const uint16_t JOYSTICK_DEADZONE = 400;
-static const uint16_t JOYSTICK_TIEBREAKER = 50;
+static const uint16_t JOYSTICK_TIEBREAKER = 20;
 static const uint JOYSTICK_ADC_GPIO_X = 44;
 static const uint JOYSTICK_ADC_GPIO_Y = 45;
 static const uint JOYSTICK_ADC_CH_X = 4;
