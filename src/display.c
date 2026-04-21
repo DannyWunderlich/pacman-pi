@@ -825,7 +825,7 @@ const uint16_t orange_tr[TILE_WIDTH * TILE_HEIGHT] = {
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 ORANGE, ORANGE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK, BLACK, BLACK,
-ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK, BLACK, BLACK,
+ORANGE, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK, BLACK,
 ORANGE, ORANGE, ORANGE, WHITE, WHITE, ORANGE, BLACK, BLACK,
 ORANGE, ORANGE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK,
 ORANGE, ORANGE, WHITE, WHITE, BLUE, BLUE, BLACK, BLACK,
@@ -870,7 +870,7 @@ const uint16_t blue_tr[TILE_WIDTH * TILE_HEIGHT] = {
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 LIGHTBLUE, LIGHTBLUE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, BLACK, BLACK, BLACK, BLACK,
-LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, BLACK, BLACK, BLACK, BLACK,
+LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, BLACK, BLACK, BLACK,
 LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, WHITE, WHITE, LIGHTBLUE, BLACK, BLACK,
 LIGHTBLUE, LIGHTBLUE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK,
 LIGHTBLUE, LIGHTBLUE, WHITE, WHITE, BLUE, BLUE, BLACK, BLACK,
@@ -1154,7 +1154,14 @@ const uint8_t initial_tile_map[NUM_TILES_Y][NUM_TILES_X] = {
 
 uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {0};
 
-// extern char font[];
+// Pointers to all tiles for easy lookup
+const uint16_t* const tile_ptrs[48] = {
+    tile_0, tile_1, tile_2, tile_3, tile_4, tile_5, tile_6, tile_7, tile_8, tile_9,
+    tile_10, tile_11, tile_12, tile_13, tile_14, tile_15, tile_16, tile_17, tile_18, tile_19,
+    tile_20, tile_21, tile_22, tile_23, tile_24, tile_25, tile_26, tile_27, tile_28, tile_29,
+    tile_30, tile_31, tile_32, tile_33, tile_34, tile_35, tile_36, tile_37, tile_38, tile_39,
+    tile_40, tile_41, tile_42, tile_43, tile_44, tile_45, tile_46, tile_47
+};
 
 void tft_write_command(uint8_t cmd){
     gpio_put(TFT_DC, 0); // Command mode
@@ -1340,9 +1347,6 @@ void tft_write_sliced_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint1
 }
 
 void draw_map(){
-    int tile_sel = 0;
-    const uint16_t* tileptr;
-
     for(int i = 0; i < NUM_TILES_Y; i ++){
         for(int j = 0; j < NUM_TILES_X; j ++){
             
@@ -1351,165 +1355,43 @@ void draw_map(){
             uint16_t x1 = x0 + TILE_WIDTH - 1;
             uint16_t y1 = y0 + TILE_HEIGHT - 1;
 
-            tile_sel = tile_map[i][j];
+            uint8_t tile_sel = tile_map[i][j];
 
-            switch(tile_sel){ // --> Can just change the map to a 2d array of pointers so we dont need this long switch case
-                case(0):
-                    tileptr = tile_0;
-                    break;
-                case(1):
-                    tileptr = tile_1;
-                    break;
-                case(2):
-                    tileptr = tile_2;
-                    break;
-                case(3):
-                    tileptr = tile_3;
-                    break;
-                case(4):
-                    tileptr = tile_4;
-                    break;
-                case(5):
-                    tileptr = tile_5;
-                    break;
-                case(6):
-                    tileptr = tile_6;
-                    break;
-                case(7):
-                    tileptr = tile_7;
-                    break;
-                case(8):
-                    tileptr = tile_8;
-                    break;
-                case(9):
-                    tileptr = tile_9;
-                    break;
-                case(10):
-                    tileptr = tile_10;
-                    break;
-                case(11):
-                    tileptr = tile_11;
-                    break;
-                case(12):
-                    tileptr = tile_12;
-                    break;
-                case(13):
-                    tileptr = tile_13;
-                    break;
-                case(14):
-                    tileptr = tile_14;
-                    break;
-                case(15):
-                    tileptr = tile_15;
-                    break;
-                case(16):
-                    tileptr = tile_16;
-                    break;
-                case(17):
-                    tileptr = tile_17;
-                    break;
-                case(18):
-                    tileptr = tile_18;
-                    break;
-                case(19):
-                    tileptr = tile_19;
-                    break;
-                case(20):
-                    tileptr = tile_20;
-                    break;
-                case(21):
-                    tileptr = tile_21;
-                    break;
-                case(22):
-                    tileptr = tile_22;
-                    break;
-                case(23):
-                    tileptr = tile_23;
-                    break;
-                case(24):
-                    tileptr = tile_24;
-                    break;
-                case(25):
-                    tileptr = tile_25;
-                    break;
-                case(26):
-                    tileptr = tile_26;
-                    break;
-                case(27):
-                    tileptr = tile_27;
-                    break;
-                case(28):
-                    tileptr = tile_28;
-                    break;
-                case(29):
-                    tileptr = tile_29;
-                    break;
-                case(30):
-                    tileptr = tile_30;
-                    break;
-                case(31):
-                    tileptr = tile_31;
-                    break;
-                case(32):
-                    tileptr = tile_32;
-                    break;
-                case(33):
-                    tileptr = tile_33;
-                    break;
-                case(34):
-                    tileptr = tile_34;
-                    break;
-                case(35):
-                    tileptr = tile_35;
-                    break;
-                case(36):
-                    tileptr = tile_36;
-                    break;
-                case(37):
-                    tileptr = tile_37;
-                    break;
-                case(38):
-                    tileptr = tile_38;
-                    break;
-                case(39):
-                    tileptr = tile_39;
-                    break;
-                case(40):
-                    tileptr = tile_40;
-                    break;
-                case(41):
-                    tileptr = tile_41;
-                    break;
-                case(42):
-                    tileptr = tile_42;
-                    break;
-                case(43):
-                    tileptr = tile_43;
-                    break;
-                case(44):
-                    tileptr = tile_44;
-                    break;
-                case(45):
-                    tileptr = tile_45;
-                    break;
-                case(46):
-                    tileptr = tile_46;
-                    break;
-                case(47):
-                    tileptr = tile_47;
-                    break;
-                default:
-                    break;
-            }
-
-            tft_write_tile(tileptr, x0, y0, x1, y1);
-            // sleep_ms(5);
+            tft_write_tile(tile_ptrs[tile_sel], x0, y0, x1, y1);
         }
     }
 }
 
 void reset_game_map() {
     memcpy(tile_map, initial_tile_map, sizeof(tile_map));
+}
+
+// Reset the map, scoreboard, and pacman + ghosts at their initial locations
+void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s) {
+    
+    // Reset map
+    reset_game_map();
+
+    // Reset scoreboard
+    s->num_pellets = 237;
+    s->num_powers = 4;
+
+    // Reset ghosts
+    g1->x = HOUSE_START_LEFT_X;
+    g1->y = HOUSE_START_LEFT_Y;
+    g1->location = IN_HOUSE;
+    
+    g2->x = HOUSE_START_RIGHT_X;
+    g2->y = HOUSE_START_RIGHT_Y;
+    g2->location = IN_HOUSE;
+
+    // Reset pacman
+    p->x = PACMAN_START_X;
+    p->y = PACMAN_START_Y;
+    p->lastx = PACMAN_START_X;
+    p->lasty = PACMAN_START_Y;
+
+    draw_map();
 }
 
 void update_pacman(InputState controls, PacmanState* pacman){
@@ -1742,11 +1624,6 @@ void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, ui
 }
 
 void draw_start_screen(){
-    
-    tft_fill_screen(BLACK);
-
-    sleep_ms(500);
-    
     uint16_t x0 = 115;
     uint16_t y0 = 13 * TILE_HEIGHT;
     uint16_t x1 = x0 + TILE_WIDTH - 1;
@@ -1786,42 +1663,6 @@ void draw_start_screen(){
     x0 += 8;
     x1 = x0 + TILE_WIDTH - 1;
     draw_letter(letter_exclam, x0, y0, x1, y1);
-
-    sleep_ms(500);
-}
-
-GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost){
-    if (keyevent & (1 << 8)) {
-        char button = (char) (keyevent & 0xFF);
-        if(button == '*'){
-            current_input->start_pressed = true;
-        }
-        else{
-            current_input->start_pressed = false;
-        }
-    }
-
-    if(current_input->start_pressed == true){
-        
-        // Draw Map and Initial Pacman 
-        draw_map();
-        draw_pacman(*current_input, pacman);
-
-        // Draw initial ghost pos
-        draw_ghost(redghost, pacman);
-        draw_ghost(pinkghost, pacman);
-
-        // 
-        
-        // draw_ghost(blueghost, pacman);
-        // draw_ghost(orangeghost, pacman);
-        
-        return GAMEPLAY;
-    }
-    else{
-        return STARTING_MENU;
-    }
-        
 }
 
 void draw_ghost(GhostState ghost, PacmanState pacman){
@@ -2021,50 +1862,11 @@ void redraw_black_in_house(GhostState ghost){
     }
 }
 
-GameState check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost, ScoreBoard* scoreboard){
-    if(((pacman->x == redghost->x && pacman->y == redghost->y) || (pacman->x == pinkghost->x && pacman->y == pinkghost->y) 
-        && pacman->mode == NORMAL)) {
-        
-        scoreboard->lives -= 1;
-        if(scoreboard->lives == 0){
-            return GAME_OVER;
-        }
-        else{
-            redghost->x = HOUSE_START_LEFT_X;
-            redghost->y = HOUSE_START_LEFT_Y;
-            redghost->location = IN_HOUSE;
-
-            pinkghost->x = HOUSE_START_RIGHT_X;
-            pinkghost->y = HOUSE_START_RIGHT_Y;
-            pinkghost->location = IN_HOUSE;
-
-            // TODO : Respawn pellets, reset pacman location, redraw updated map
-            reset_game_map();
-
-            scoreboard->num_pellets = 237;
-            scoreboard->num_powers = 4;
-
-            pacman->x = PACMAN_START_X;
-            pacman->y = PACMAN_START_Y;
-            pacman->lastx = PACMAN_START_X;
-            pacman->lasty = PACMAN_START_Y;
-
-            draw_map();
-
-            return GAMEPLAY;
-        }
-        // TODO : else we have to restart the level
-       }
-    else { // --> Might need to change
-        return GAMEPLAY;
-    }
+bool check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost) {
+    return (((pacman->x == redghost->x && pacman->y == redghost->y) || (pacman->x == pinkghost->x && pacman->y == pinkghost->y)) && pacman->mode == NORMAL);
 }
 
-void draw_end_screen(){
-    tft_fill_screen(BLACK);
-
-    sleep_ms(500);
-    
+void draw_end_screen(){    
     uint16_t x0 = 115;
     uint16_t y0 = 13 * TILE_HEIGHT;
     uint16_t x1 = x0 + TILE_WIDTH - 1;
@@ -2098,8 +1900,6 @@ void draw_end_screen(){
     x0 += 8;
     x1 = x0 + TILE_WIDTH - 1;
     draw_letter(red_letter_exclam, x0, y0, x1, y1);
-
-    sleep_ms(500);
 }
 
 void init_chomper_timer(){
@@ -2264,4 +2064,20 @@ void update_ghost(GhostState* ghost, PacmanState pacman){
         }
     }
 
+}
+
+void display_flash_text(GameState state) {
+    static uint32_t flash_text_timer = 0;
+    static bool flash_text = false;
+
+    // Flash the start/end menu text every 500 ms
+    if (time_us_32() - flash_text_timer > 500000) {
+        if (flash_text) {
+            (state == STARTING_MENU) ? draw_start_screen() : draw_end_screen();
+        } else {
+            tft_fill_screen(BLACK);
+        }
+        flash_text = !flash_text;
+        flash_text_timer = time_us_32();
+    }
 }
