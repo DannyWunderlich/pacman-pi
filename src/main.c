@@ -175,6 +175,7 @@ int main() {
                     if (check_collision(&pacman, &redghost, &pinkghost)) {
                         sleep_ms(750); // hitstop effect
                         scoreboard.lives -= 1;
+                        ssd_update_buffer(scoreboard);
                         if (scoreboard.lives == 0) {
                             tft_fill_screen(BLACK);
                             game_state = GAME_OVER;

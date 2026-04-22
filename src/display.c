@@ -1297,10 +1297,12 @@ void ssd_display_score(ScoreBoard scoreboard) {
 }
 
 bool ssd_timer_callback(struct repeating_timer *t) {
+    static uint8_t current_digit = 0;
     gpio_put(SSD_SPI_CSN, 0);
-    spi_write16_blocking(spi1, ssd_msg_buffer, 8);
+    spi_write16_blocking(spi1, &ssd_msg_buffer[current_digit], 1);
     gpio_put(SSD_SPI_CSN, 1);
-    
+    current_digit = (current_digit + 1) % 8;
+
     return true;
 }
 
@@ -1349,7 +1351,7 @@ void display_init(){
 
 void ssd_update_buffer(ScoreBoard scoreboard) {
     char display_string[9];
-    snprintf(display_string, sizeof(display_string), "%05d  %1d", scoreboard.score, scoreboard.lives);
+    snprintf(display_string, sizeof(display_string), "%6d %1d", scoreboard.score, scoreboard.lives);
     for (int i = 0; i < 8; i++) {
         unsigned char c = display_string[i];
         uint16_t seg = font[c];
