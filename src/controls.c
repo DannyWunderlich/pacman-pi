@@ -30,7 +30,12 @@ static const uint8_t IO_BOARD_INV = 0x02; // Port A I/O pin invert input polarit
 static const uint8_t IO_BOARD_PU = 0x0C; // Port A I/O pin pull-up register
 static const uint8_t IO_BOARD_GPIO = 0x12; // Port A I/O pin values register
 
-static uint8_t buttons_previous;
+/* Proton Board pushbutton parameters (GPIO 21 and 26 )*/
+static const uint GPIO_BUTTON_START = 21;
+static const uint GPIO_BUTTON_SELECT = 26;
+
+static uint8_t gpio_buttons_previous;
+static uint8_t i2c_buttons_previous;
 
 static InputState controls;
 
@@ -69,11 +74,22 @@ void controls_init(void) {
     i2c_write_data[1] = 0xFF;
     i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, i2c_write_data, 2, false);
 
+    /* Configure built-in pushbuttons on top of the Proton board (GPIO 21 and 26)
+       Just for testing purposes if you don't have MCP23017 these will work too.*/
+    gpio_init(GPIO_BUTTON_START);
+    gpio_init(GPIO_BUTTON_SELECT);
+    gpio_set_dir(GPIO_BUTTON_START, false);
+    gpio_set_dir(GPIO_BUTTON_SELECT, false);
+    gpio_pull_up(GPIO_BUTTON_START);
+    gpio_pull_up(GPIO_BUTTON_SELECT);
+
     // Initialize control states
     controls.joystick = INPUT_DIRECTION_NONE;
     controls.start_pressed  = false;
     controls.select_pressed = false;
-    buttons_previous = 0;
+
+    gpio_buttons_previous = 0;
+    i2c_buttons_previous = 0;
 }
 
 void controls_update(void) {
@@ -125,6 +141,16 @@ void controls_update(void) {
         }
     }
 
+    /* Proton Board pushbutton update logic */
+
+    uint8_t gpio_buttons_current = (!gpio_get(GPIO_BUTTON_START) << I2C_BUTTONS_START_BIT) | (!gpio_get(GPIO_BUTTON_SELECT) << I2C_BUTTONS_SELECT_BIT);
+    uint8_t gpio_buttons_pressed = gpio_buttons_current & ~gpio_buttons_previous;
+    
+    if (gpio_buttons_pressed & (1u << I2C_BUTTONS_START_BIT)) controls.start_pressed = true;
+    if (gpio_buttons_pressed & (1u << I2C_BUTTONS_SELECT_BIT)) controls.select_pressed = true;
+    
+    gpio_buttons_previous = gpio_buttons_current;
+    
     /* Pushbutton (I2C) update logic */
 
     uint8_t i2c_read_data;
@@ -138,11 +164,11 @@ void controls_update(void) {
     uint8_t buttons_current = i2c_read_data; 
 
     // Flag START and/or SELECT bit as pressed if a rising edge was detected respectively
-    uint8_t buttons_pressed = (uint8_t)(buttons_current & ~buttons_previous);
+    uint8_t buttons_pressed = (uint8_t)(buttons_current & ~i2c_buttons_previous);
     if (buttons_pressed & (1u << I2C_BUTTONS_START_BIT)) controls.start_pressed = true;
     if (buttons_pressed & (1u << I2C_BUTTONS_SELECT_BIT)) controls.select_pressed = true;
 
-    buttons_previous = buttons_current;
+    i2c_buttons_previous = buttons_current;
 }
 
 InputState controls_get(void) { return controls; }
