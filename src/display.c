@@ -1394,63 +1394,64 @@ void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s) 
     draw_map();
 }
 
-void update_pacman(InputState controls, PacmanState* pacman){
-
+void update_pacman(InputState controls, PacmanState* pacman) {
     pacman->lastx = pacman->x;
     pacman->lasty = pacman->y;
-    
-    switch(controls.joystick){
-        case INPUT_DIRECTION_NONE :
-             pacman->x += 0;
-             pacman->y += 0;
-        break;
-        case INPUT_DIRECTION_UP   :
-             if(tile_map[pacman->y - 1][pacman->x] == 45 || tile_map[pacman->y - 1][pacman->x] == 46 || tile_map[pacman->y - 1][pacman->x] == 47){
-                pacman->x += 0;
-                pacman->y += -1;
-                pacman->direction = FACING_UP;
-             }
-        break;
-        case INPUT_DIRECTION_DOWN :
-            if(tile_map[pacman->y + 1][pacman->x] == 45 || tile_map[pacman->y + 1][pacman->x] == 46 || tile_map[pacman->y + 1][pacman->x] == 47){
-                pacman->x += 0;
-                pacman->y += 1;
-                pacman->direction = FACING_DOWN;
-             }
-        break;
-        case INPUT_DIRECTION_LEFT :
-            if(pacman->x == 0 && pacman->y == 14){ // wrap to other side
-                pacman->x = 27;
-                pacman->y = 14;
-                pacman->direction = FACING_LEFT;
 
-            }
-            else if(tile_map[pacman->y][pacman->x - 1] == 45 || tile_map[pacman->y][pacman->x - 1] == 46 || tile_map[pacman->y][pacman->x - 1] == 47){
-                pacman->x += -1;
-                pacman->y += 0;
-                pacman->direction = FACING_LEFT;
-             }
-        break;
-        case INPUT_DIRECTION_RIGHT:
-            if(pacman->x == 27 && pacman->y == 14){ // wrap to other side
-                pacman->x = 0;
-                pacman->y = 14;
-                pacman->direction = FACING_RIGHT;
+    int next_x = pacman->x;
+    int next_y = pacman->y;
 
-            }
-            else if(tile_map[pacman->y][pacman->x + 1] == 45 || tile_map[pacman->y][pacman->x + 1] == 46 || tile_map[pacman->y][pacman->x + 1] == 47){
-                pacman->x += 1;
-                pacman->y += 0;
-                pacman->direction = FACING_RIGHT;
-             }
-        break;
-        default:
-             pacman->x += 0;
-             pacman->y += 0;
-        break;
+    int input_x = pacman->x;
+    int input_y = pacman->y;
+    int input_dir = pacman->direction;
+
+    // Default coordinates to move in direction pac-man is currently facing
+    switch (pacman->direction) {
+        case FACING_UP: next_y -= 1; break;
+        case FACING_DOWN: next_y += 1; break;
+        case FACING_LEFT: next_x -= 1; break;
+        case FACING_RIGHT: next_x += 1; break;
     }
 
+    // Wrap default coordinates if past tunnel bounds
+    if (next_x < 0) next_x = 27;
+    if (next_x > 27) next_x = 0;
 
+    // Determine intended joystick input
+    if (controls.joystick == INPUT_DIRECTION_UP) {
+        input_y -= 1;
+        input_dir = FACING_UP;
+    } else if (controls.joystick == INPUT_DIRECTION_DOWN)  {
+        input_y += 1;
+        input_dir = FACING_DOWN;
+    } else if (controls.joystick == INPUT_DIRECTION_LEFT)  {
+        input_x -= 1;
+        input_dir = FACING_LEFT;
+    } else if (controls.joystick == INPUT_DIRECTION_RIGHT) {
+        input_x += 1;
+        input_dir = FACING_RIGHT;
+    } else if (controls.joystick == INPUT_DIRECTION_NONE) {
+        input_x = next_x;
+        input_y = next_y;
+    }
+
+    // Wrap joystick coordinates if past tunnel bounds
+    if (input_x < 0) input_x = 27;
+    if (input_x > 27) input_x = 0;
+
+    /* Try moving in joystick direction first. If joystick is going
+       into a wall, then try direction pac-man is currently facing.
+       If pac-man is facing a wall, do nothing */
+    if (tile_map[input_y][input_x] >= 45) {
+        pacman->x = input_x;
+        pacman->y = input_y;
+        pacman->direction = input_dir;
+        return;
+    } else if (tile_map[next_y][next_x] >= 45) {
+        pacman->x = next_x;
+        pacman->y = next_y;
+        return;
+    }
 }
 
 void draw_pacman(InputState controls, PacmanState pacman){
@@ -1863,7 +1864,25 @@ void redraw_black_in_house(GhostState ghost){
 }
 
 bool check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost) {
+<<<<<<< Updated upstream
     return (((pacman->x == redghost->x && pacman->y == redghost->y) || (pacman->x == pinkghost->x && pacman->y == pinkghost->y)) && pacman->mode == NORMAL);
+=======
+    if (pacman->mode != NORMAL) return false;
+
+    /* Collision detection logic */
+    bool hit_ghost = false;
+    
+    // Check if pacman and red ghost share same tile position
+    hit_ghost = ((pacman->x == redghost->x) && (pacman->y == redghost->y)) ||
+    // or pacman and red ghost swapped tile positions
+    ((pacman->x == redghost->lastx) && (pacman->y == redghost->lasty) && (pacman->lastx == redghost->x) && (pacman->lasty == redghost->y)) ||
+    // or pacman and pink ghost share same tile position
+    ((pacman->x == pinkghost->x) && (pacman->y == pinkghost->y)) ||
+    // or pacman and pink ghost swapped tile positions
+    ((pacman->x == pinkghost->lastx) && (pacman->y == pinkghost->lasty) && (pacman->lastx == pinkghost->x) && (pacman->lasty == pinkghost->y));
+
+    return hit_ghost;
+>>>>>>> Stashed changes
 }
 
 void draw_end_screen(){    
@@ -1993,15 +2012,7 @@ void ghostunlock_isr(){
 }
 
 void update_ghost(GhostState* ghost, PacmanState pacman){
-    // if((ghost->location != IN_HOUSE)){
-    //     ghost->lastx = ghost->x;
-    //     ghost->lasty = ghost->y;
-    // }
-    // else{
-    //     ghost->lastx = ghost->x;
-    //     ghost->lasty = ghost->y;
-    // }
-
+    
     ghost->lastx = ghost->x;
     ghost->lasty = ghost->y;
 
