@@ -1049,6 +1049,17 @@ BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+const uint16_t letter_d[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 const uint16_t letter_g[TILE_WIDTH * TILE_HEIGHT] = {
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, RED, RED, RED, RED, RED, BLACK,
@@ -1079,6 +1090,17 @@ BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
 BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
 BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
 BLACK, BLACK, BLACK, RED, RED, RED, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_u[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, BLACK, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
@@ -1154,6 +1176,10 @@ const uint8_t initial_tile_map[NUM_TILES_Y][NUM_TILES_X] = {
 };
 
 uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {0};
+
+// 7-segment display buffer for score and lives
+extern char font[];
+uint16_t __attribute__((aligned(16))) ssd_msg_buffer[8] = {0};
 
 // Pointers to all tiles for easy lookup
 const uint16_t* const tile_ptrs[48] = {
@@ -1247,8 +1273,11 @@ void ssd_display_score(ScoreBoard scoreboard) {
 }
 
 bool ssd_timer_callback(struct repeating_timer *t) {
-    ssd_display_score(scoreboard);
-    return true; // keep repeating
+    gpio_put(SSD_SPI_CSN, 0);
+    spi_write16_blocking(spi1, ssd_msg_buffer, 8);
+    gpio_put(SSD_SPI_CSN, 1);
+    
+    return true;
 }
 
 void display_init(){
@@ -1294,56 +1323,68 @@ void display_init(){
     tft_write_command(0x29); // Display ON
 }
 
-void tft_fill_screen(uint16_t color) {
-    tft_set_address_window(0, 0, 319, 239);
+void ssd_update_buffer(ScoreBoard scoreboard) {
+    char display_string[9];
+    snprintf(display_string, sizeof(display_string), "%05d  %1d", scoreboard.score, scoreboard.lives);
+    for (int i = 0; i < 8; i++) {
+        unsigned char c = display_string[i];
+        uint16_t seg = font[c];
+        ssd_msg_buffer[i] = (i << 8) | seg;
+    }
+}
+
+static inline void tft_fill_region(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color) {
+    uint32_t num_pixels = (uint32_t)(x1 - x0 + 1) * (y1 - y0 + 1);
 
     uint8_t hi = (uint8_t)(color >> 8);
     uint8_t lo = (uint8_t)(color & 0xFF);
 
+    // Build fill buffer
+    static uint8_t fill_buf[2 * TILE_WIDTH * TILE_HEIGHT * 4];
+    uint32_t buf_pixels = num_pixels < (sizeof(fill_buf) / 2) ? num_pixels : (sizeof(fill_buf) / 2);
+    for (uint32_t i = 0; i < buf_pixels; i++) {
+        fill_buf[i * 2]     = hi;
+        fill_buf[i * 2 + 1] = lo;
+    }
+
+    tft_set_address_window(x0, y0, x1, y1);
     gpio_put(TFT_DC, 1);
     gpio_put(TFT_SPI_CSN, 0);
 
-    // Loop through every pixel on the screen (240 * 320)
-    for (uint32_t i = 0; i < (240 * 320); i++) {
-        // Send high byte then low byte <--- ILI9341 IS BIG ENDIAN
-        spi_write_blocking(spi0, &hi, 1);
-        spi_write_blocking(spi0, &lo, 1);
+    uint32_t pixels_sent = 0;
+    while (pixels_sent < num_pixels) {
+        uint32_t chunk = num_pixels - pixels_sent;
+        if (chunk > buf_pixels) chunk = buf_pixels;
+        spi_write_blocking(spi0, fill_buf, chunk * 2);
+        pixels_sent += chunk;
     }
 
     gpio_put(TFT_SPI_CSN, 1);
 }
 
+void tft_fill_screen(uint16_t color) {
+    tft_fill_region(0, 0, 319, 239, color);
+}
+
 void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     tft_set_address_window(x0, y0, x1, y1);
-
     gpio_put(TFT_DC, 1);
     gpio_put(TFT_SPI_CSN, 0);
-
-    for(int i = 0; i < TILE_HEIGHT * TILE_WIDTH; i ++){
-        uint8_t hi = (uint8_t)(tile[i] >> 8);
-        uint8_t lo = (uint8_t)(tile[i] & 0xFF);
-
-        spi_write_blocking(spi0, &hi, 1);
-        spi_write_blocking(spi0, &lo, 1);
+    for (int i = 0; i < TILE_WIDTH * TILE_HEIGHT; i++) {
+        uint8_t buf[2] = { (uint8_t)(tile[i] >> 8), (uint8_t)(tile[i] & 0xFF) };
+        spi_write_blocking(spi0, buf, 2);
     }
-
     gpio_put(TFT_SPI_CSN, 1);
 }
 
 void tft_write_sliced_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     tft_set_address_window(x0, y0, x1, y1);
-
     gpio_put(TFT_DC, 1);
     gpio_put(TFT_SPI_CSN, 0);
-
-    for(int i = 0; i < TILE_HEIGHT * (TILE_WIDTH - 1); i ++){
-        uint8_t hi = (uint8_t)(tile[i] >> 8);
-        uint8_t lo = (uint8_t)(tile[i] & 0xFF);
-
-        spi_write_blocking(spi0, &hi, 1);
-        spi_write_blocking(spi0, &lo, 1);
+    for (int i = 0; i < (TILE_WIDTH - 1) * TILE_HEIGHT; i++) {
+        uint8_t buf[2] = { (uint8_t)(tile[i] >> 8), (uint8_t)(tile[i] & 0xFF) };
+        spi_write_blocking(spi0, buf, 2);
     }
-
     gpio_put(TFT_SPI_CSN, 1);
 }
 
@@ -1411,63 +1452,64 @@ void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s) 
     reset_sprites(p, g1, g2);
 }
 
-void update_pacman(InputState controls, PacmanState* pacman){
-
+void update_pacman(InputState controls, PacmanState* pacman) {
     pacman->lastx = pacman->x;
     pacman->lasty = pacman->y;
-    
-    switch(controls.joystick){
-        case INPUT_DIRECTION_NONE :
-             pacman->x += 0;
-             pacman->y += 0;
-        break;
-        case INPUT_DIRECTION_UP   :
-             if(tile_map[pacman->y - 1][pacman->x] == 45 || tile_map[pacman->y - 1][pacman->x] == 46 || tile_map[pacman->y - 1][pacman->x] == 47){
-                pacman->x += 0;
-                pacman->y += -1;
-                pacman->direction = FACING_UP;
-             }
-        break;
-        case INPUT_DIRECTION_DOWN :
-            if(tile_map[pacman->y + 1][pacman->x] == 45 || tile_map[pacman->y + 1][pacman->x] == 46 || tile_map[pacman->y + 1][pacman->x] == 47){
-                pacman->x += 0;
-                pacman->y += 1;
-                pacman->direction = FACING_DOWN;
-             }
-        break;
-        case INPUT_DIRECTION_LEFT :
-            if(pacman->x == 0 && pacman->y == 14){ // wrap to other side
-                pacman->x = 27;
-                pacman->y = 14;
-                pacman->direction = FACING_LEFT;
 
-            }
-            else if(tile_map[pacman->y][pacman->x - 1] == 45 || tile_map[pacman->y][pacman->x - 1] == 46 || tile_map[pacman->y][pacman->x - 1] == 47){
-                pacman->x += -1;
-                pacman->y += 0;
-                pacman->direction = FACING_LEFT;
-             }
-        break;
-        case INPUT_DIRECTION_RIGHT:
-            if(pacman->x == 27 && pacman->y == 14){ // wrap to other side
-                pacman->x = 0;
-                pacman->y = 14;
-                pacman->direction = FACING_RIGHT;
+    int next_x = pacman->x;
+    int next_y = pacman->y;
 
-            }
-            else if(tile_map[pacman->y][pacman->x + 1] == 45 || tile_map[pacman->y][pacman->x + 1] == 46 || tile_map[pacman->y][pacman->x + 1] == 47){
-                pacman->x += 1;
-                pacman->y += 0;
-                pacman->direction = FACING_RIGHT;
-             }
-        break;
-        default:
-             pacman->x += 0;
-             pacman->y += 0;
-        break;
+    int input_x = pacman->x;
+    int input_y = pacman->y;
+    int input_dir = pacman->direction;
+
+    // Default coordinates to move in direction pac-man is currently facing
+    switch (pacman->direction) {
+        case FACING_UP: next_y -= 1; break;
+        case FACING_DOWN: next_y += 1; break;
+        case FACING_LEFT: next_x -= 1; break;
+        case FACING_RIGHT: next_x += 1; break;
     }
 
+    // Wrap default coordinates if past tunnel bounds
+    if (next_x < 0) next_x = 27;
+    if (next_x > 27) next_x = 0;
 
+    // Determine intended joystick input
+    if (controls.joystick == INPUT_DIRECTION_UP) {
+        input_y -= 1;
+        input_dir = FACING_UP;
+    } else if (controls.joystick == INPUT_DIRECTION_DOWN)  {
+        input_y += 1;
+        input_dir = FACING_DOWN;
+    } else if (controls.joystick == INPUT_DIRECTION_LEFT)  {
+        input_x -= 1;
+        input_dir = FACING_LEFT;
+    } else if (controls.joystick == INPUT_DIRECTION_RIGHT) {
+        input_x += 1;
+        input_dir = FACING_RIGHT;
+    } else if (controls.joystick == INPUT_DIRECTION_NONE) {
+        input_x = next_x;
+        input_y = next_y;
+    }
+
+    // Wrap joystick coordinates if past tunnel bounds
+    if (input_x < 0) input_x = 27;
+    if (input_x > 27) input_x = 0;
+
+    /* Try moving in joystick direction first. If joystick is going
+       into a wall, then try direction pac-man is currently facing.
+       If pac-man is facing a wall, do nothing */
+    if (tile_map[input_y][input_x] >= 45) {
+        pacman->x = input_x;
+        pacman->y = input_y;
+        pacman->direction = input_dir;
+        return;
+    } else if (tile_map[next_y][next_x] >= 45) {
+        pacman->x = next_x;
+        pacman->y = next_y;
+        return;
+    }
 }
 
 void draw_pacman(InputState controls, PacmanState pacman){
@@ -1516,124 +1558,26 @@ void draw_pacman(InputState controls, PacmanState pacman){
     uint16_t fill_color = BLACK;
 
     // Redraw wrap around
-    if(pacman.x == 0 && pacman.y == 14 && pacman.lastx == 27 && pacman.lasty == 14){
-        x0 = 27 * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = (x0 + (TILE_WIDTH * 2) - 1);
-        y0 = 14 * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + (2 * TILE_HEIGHT - 1);
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
-    }
-    else if(pacman.x == 27 && pacman.y == 14 && pacman.lastx == 0 && pacman.lasty == 14){
-        x0 = 0 * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = (x0 + (TILE_WIDTH * 2) - 1);
-        y0 = 14 * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + (2 * TILE_HEIGHT - 1);
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
-    }
-    else if(pacman.lastx < pacman.x){
+    if (pacman.x != pacman.lastx || pacman.y != pacman.lasty) {
         x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = x0 + TILE_WIDTH - 1;
+        x1 = x0 + (2 * TILE_WIDTH) - 1;
         y0 = pacman.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + (2 * TILE_HEIGHT - 1);
+        y1 = y0 + (2 * TILE_HEIGHT) - 1;
 
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i ++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
+        // Crop the box based on direction
+        if (pacman.lastx < pacman.x && !(pacman.lastx == 0 && pacman.x == 27)) {
+        x1 -= TILE_WIDTH;   // Moving right: crop the right edge
+        } 
+        else if (pacman.lastx > pacman.x && !(pacman.lastx == 27 && pacman.x == 0)) {
+            x0 += TILE_WIDTH;   // Moving left: crop the left edge
+        } 
+        else if (pacman.lasty < pacman.y) {
+            y1 -= TILE_HEIGHT;  // Moving down: crop the bottom edge
+        } 
+        else if (pacman.lasty > pacman.y) {
+            y0 += TILE_HEIGHT;  // Moving up: crop the top edge
         }
-
-        gpio_put(TFT_SPI_CSN, 1);
-    }
-    else if(pacman.lastx > pacman.x){
-        x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET + (TILE_WIDTH / 2);
-        x1 = x0 + TILE_WIDTH - 1;
-        y0 = pacman.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + (2 * TILE_HEIGHT - 1);
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i ++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
-    }
-    else if(pacman.lasty < pacman.y) {
-        x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = x0 + (2 * TILE_WIDTH - 1);
-        y0 = pacman.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + TILE_HEIGHT - 1;
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-        gpio_put(TFT_SPI_CSN, 1);
-    }   
-    else if (pacman.lasty > pacman.y) {
-        x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = x0 + (2 * TILE_WIDTH - 1);
-        y0 = pacman.lasty * TILE_HEIGHT + (TILE_HEIGHT / 2);
-        y1 = y0 + TILE_HEIGHT - 1;
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
+        tft_fill_region(x0, y0, x1, y1, fill_color);
     }
 }
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1){
@@ -1680,6 +1624,25 @@ void draw_start_screen(){
     x0 += 8;
     x1 = x0 + TILE_WIDTH - 1;
     draw_letter(letter_exclam, x0, y0, x1, y1);
+}
+
+void draw_paused_screen(){
+    uint16_t x0 = 136; 
+    uint16_t y0 = 13 * TILE_HEIGHT;
+    uint16_t x1 = x0 + TILE_WIDTH - 1;
+    uint16_t y1 = y0 + TILE_HEIGHT - 1;
+
+    draw_letter(letter_p, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_a, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_u, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_s, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_e, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_d, x0, y0, x1, y1);
 }
 
 void draw_ghost(GhostState ghost, PacmanState pacman){
@@ -1737,80 +1700,28 @@ void draw_ghost(GhostState ghost, PacmanState pacman){
         x1 = x0 + TILE_WIDTH - 1;
         y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
         y1 = y0 + (2 * TILE_HEIGHT - 1);
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i ++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
-
+        tft_fill_region(x0, y0, x1, y1, fill_color);
     }
     else if(ghost.lastx > ghost.x){
         x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET + (TILE_WIDTH / 2);
         x1 = x0 + TILE_WIDTH - 1;
         y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
         y1 = y0 + (2 * TILE_HEIGHT - 1);
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i ++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
+        tft_fill_region(x0, y0, x1, y1, fill_color);
     }
     else if(ghost.lasty < ghost.y) {
         x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
         x1 = x0 + (2 * TILE_WIDTH - 1);
         y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
         y1 = y0 + TILE_HEIGHT - 1;
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-        gpio_put(TFT_SPI_CSN, 1);
+        tft_fill_region(x0, y0, x1, y1, fill_color);
     }   
     else if (ghost.lasty > ghost.y) {
         x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
         x1 = x0 + (2 * TILE_WIDTH - 1);
         y0 = ghost.lasty * TILE_HEIGHT + (TILE_HEIGHT / 2);
         y1 = y0 + TILE_HEIGHT - 1;
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 2); i++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
+        tft_fill_region(x0, y0, x1, y1, fill_color);
     }
 
      // Write a pellet / power if it is there --> Makes the ghosts look a little weird but whatever
@@ -1840,21 +1751,7 @@ void redraw_black_in_house(GhostState ghost){
         x1 = (x0 + (TILE_WIDTH * 2) - 1);
         y0 = HOUSE_START_LEFT_Y * TILE_HEIGHT - (TILE_HEIGHT / 2);
         y1 = y0 + (2 * TILE_HEIGHT - 1);
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
-
+        tft_fill_region(x0, y0, x1, y1, fill_color);
     }
     else if(ghost.color == COLOR_PINK && (ghost.x == OUT_START_RIGHT_X && ghost.y == OUT_START_RIGHT_Y)){
         // Redraw black inside the right house spot
@@ -1862,20 +1759,7 @@ void redraw_black_in_house(GhostState ghost){
         x1 = (x0 + (TILE_WIDTH * 2) - 1);
         y0 = HOUSE_START_RIGHT_Y * TILE_HEIGHT - (TILE_HEIGHT / 2);
         y1 = y0 + (2 * TILE_HEIGHT - 1);
-
-        tft_set_address_window(x0, y0, x1, y1);
-        uint8_t hi = (uint8_t)(fill_color >> 8);
-        uint8_t lo = (uint8_t)(fill_color & 0xFF);
-
-        gpio_put(TFT_DC, 1);
-        gpio_put(TFT_SPI_CSN, 0);
-
-        for(int i = 0; i < (TILE_WIDTH * TILE_HEIGHT * 4); i ++){
-            spi_write_blocking(spi0, &hi, 1);
-            spi_write_blocking(spi0, &lo, 1);
-        }
-
-        gpio_put(TFT_SPI_CSN, 1);
+        tft_fill_region(x0, y0, x1, y1, fill_color);
     }
 }
 
@@ -1886,13 +1770,13 @@ bool check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pink
     bool hit_ghost = false;
     
     // Check if pacman and red ghost share same tile position
-    hit_ghost = (pacman->x == redghost->x) && (pacman->y == redghost->y) ||
+    hit_ghost = ((pacman->x == redghost->x) && (pacman->y == redghost->y)) ||
     // or pacman and red ghost swapped tile positions
-    (pacman->x == redghost->lastx) && (pacman->y == redghost->lasty) && (pacman->lastx == redghost->x) && (pacman->lasty == redghost->y) ||
+    ((pacman->x == redghost->lastx) && (pacman->y == redghost->lasty) && (pacman->lastx == redghost->x) && (pacman->lasty == redghost->y)) ||
     // or pacman and pink ghost share same tile position
-    (pacman->x == pinkghost->x) && (pacman->y == pinkghost->y) ||
+    ((pacman->x == pinkghost->x) && (pacman->y == pinkghost->y)) ||
     // or pacman and pink ghost swapped tile positions
-    (pacman->x == pinkghost->lastx) && (pacman->y == pinkghost->lasty) && (pacman->lastx == pinkghost->x) && (pacman->lasty == pinkghost->y);
+    ((pacman->x == pinkghost->lastx) && (pacman->y == pinkghost->lasty) && (pacman->lastx == pinkghost->x) && (pacman->lasty == pinkghost->y));
 
     return hit_ghost;
 }
@@ -1950,28 +1834,29 @@ void chomper_isr(){
 
 void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState pinkghost){
 
-    if(tile_map[pacman->y][pacman->x] == 46){ // Pellet
+    if (tile_map[pacman->y][pacman->x] == 46) { // Pellet
         tile_map[pacman->y][pacman->x] = 45;
         scoreboard->num_pellets -= 1;
         scoreboard->total_food -= 1;
         scoreboard->score += 10;
     }
-    else if(((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y))  && (pacman->mode == CHOMPER)){
-        scoreboard->score += 200;
-    }
-    else if(tile_map[pacman->y][pacman->x] == 47){ // Powerup 
+    else if (tile_map[pacman->y][pacman->x] == 47) { // Powerup
         tile_map[pacman->y][pacman->x] = 45;
-        scoreboard->score += 50;
         scoreboard->num_powers -= 1;
         scoreboard->total_food -= 1;
+        scoreboard->score += 50;
         pacman->mode = CHOMPER;
 
         // Count to 6 seconds then set pacmans mode back to normal (chomper_isr)
         timer0_hw->alarm[2] = timer0_hw->timerawl + 6000000; 
     }
+    
+    if (((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y))  && (pacman->mode == CHOMPER)){
+        scoreboard->score += 200;
+    }
 }
 
-void init_ghostunlock_timer(){
+void init_ghostunlock_timer() {
     irq_set_exclusive_handler(TIMER1_IRQ_2, ghostunlock_isr);
     timer1_hw->inte |= (1u << 2);
     irq_set_enabled(TIMER1_IRQ_2, true);
@@ -1985,53 +1870,36 @@ void ghostunlock_isr(){
     // Acknowldege interrupt
     timer1_hw->intr |= (1u << 2);
 
-    if(redghost.location == IN_HOUSE){
-        redghost.unlock_counter = (redghost.unlock_counter + 1) % 6;
-        if(redghost.unlock_counter == 5){
-            redghost.location = OUT_HOUSE;
-            // redghost.lastx = redghost.x;
-            // redghost.lasty = redghost.y;
-            redghost.x = OUT_START_LEFT_X;
-            redghost.y = OUT_START_LEFT_Y;
+    if (game_state == GAMEPLAY) {
+        if(redghost.location == IN_HOUSE){
+            redghost.unlock_counter = (redghost.unlock_counter + 1) % 6;
+            if(redghost.unlock_counter == 5){
+                redghost.location = OUT_HOUSE;
+                redghost.x = OUT_START_LEFT_X;
+                redghost.y = OUT_START_LEFT_Y;
+            }
+        }
+        else{
+            redghost.unlock_counter = 0;
+        }
 
-            redraw_black_in_house(redghost);
+        if(pinkghost.location == IN_HOUSE){
+            pinkghost.unlock_counter = (pinkghost.unlock_counter + 1) % 6;
+            if(pinkghost.unlock_counter == 5){
+                pinkghost.location = OUT_HOUSE;
+                pinkghost.x = OUT_START_RIGHT_X;
+                pinkghost.y = OUT_START_RIGHT_Y;
+            }
+        }
+        else{
+            pinkghost.unlock_counter = 0;
         }
     }
-    else{
-        redghost.unlock_counter = 0;
-        // printf("RED COUNT : %d\n", redghost.unlock_counter);
-    }
-
-    if(pinkghost.location == IN_HOUSE){
-        pinkghost.unlock_counter = (pinkghost.unlock_counter + 1) % 6;
-        if(pinkghost.unlock_counter == 5){
-            pinkghost.location = OUT_HOUSE;
-            // pinkghost.lastx = pinkghost.x;
-            // pinkghost.lasty = pinkghost.y;
-            pinkghost.x = OUT_START_RIGHT_X;
-            pinkghost.y = OUT_START_RIGHT_Y;
-
-            redraw_black_in_house(pinkghost);
-        }
-    }
-    else{
-        pinkghost.unlock_counter = 0;
-        // printf("PINK COUNT : %d\n", redghost.unlock_counter);
-    }
-
     timer1_hw->alarm[2] = timer1_hw->timerawl + 1000000;
 }
 
 void update_ghost(GhostState* ghost, PacmanState pacman){
-    // if((ghost->location != IN_HOUSE)){
-    //     ghost->lastx = ghost->x;
-    //     ghost->lasty = ghost->y;
-    // }
-    // else{
-    //     ghost->lastx = ghost->x;
-    //     ghost->lasty = ghost->y;
-    // }
-
+    
     ghost->lastx = ghost->x;
     ghost->lasty = ghost->y;
 
@@ -2105,7 +1973,7 @@ void display_flash_text(GameState state) {
         if (flash_text) {
             (state == STARTING_MENU) ? draw_start_screen() : draw_end_screen();
         } else {
-            tft_fill_screen(BLACK);
+            tft_fill_region(115, 13 * TILE_HEIGHT, 115 + (12 * TILE_WIDTH) - 1, 13 * TILE_HEIGHT + TILE_HEIGHT - 1, BLACK);
         }
         flash_text = !flash_text;
         flash_text_timer = time_us_32();
