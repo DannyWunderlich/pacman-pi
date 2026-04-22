@@ -128,8 +128,15 @@ int main(){
                     update_pacman(current_input, &pacman);
                     update_scoreboard(&pacman, &scoreboard, redghost, pinkghost);
                     
-                    redraw_black_in_house(redghost);
-                    redraw_black_in_house(pinkghost);
+                    // Conditionally redraw black in house only when ghosts exit
+                    static GhostLocation redghost_prev_location = IN_HOUSE;
+                    static GhostLocation pinkghost_prev_location = IN_HOUSE;
+                    if ((redghost.location == OUT_HOUSE) && (redghost_prev_location == IN_HOUSE))
+                        redraw_black_in_house(redghost);
+                    if ((pinkghost.location == OUT_HOUSE) && (pinkghost_prev_location == IN_HOUSE))
+                        redraw_black_in_house(pinkghost);
+                    redghost_prev_location = redghost.location;
+                    pinkghost_prev_location = pinkghost.location;
 
                     update_ghost(&redghost, pacman);
                     update_ghost(&pinkghost, pacman);
