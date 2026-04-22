@@ -1,9 +1,9 @@
-#include "controls.h"
+#include <stdlib.h>
+#include <stdint.h>
 #include "pico/stdlib.h"
 #include "hardware/adc.h"
 #include "hardware/i2c.h"
-#include <stdlib.h>
-#include <stdint.h>
+#include "controls.h"
 
 /* Joystick (ADC) parameters */
 static const uint16_t JOYSTICK_CENTER_X = 2048;

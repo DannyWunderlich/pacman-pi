@@ -129,6 +129,7 @@ void draw_end_screen(void);
 void redraw_black_in_house(GhostState ghost);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void reset_game_map(void);
+void reset_sprites(PacmanState* p, GhostState* g1, GhostState* g2);
 void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s);
 
 // Pacman functions

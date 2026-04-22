@@ -1,11 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "pico/stdlib.h"
-#include "hardware/spi.h"
 #include "display.h"
 #include "controls.h"
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
 
 InputState current_input = {
     .joystick = INPUT_DIRECTION_NONE,
@@ -118,6 +115,8 @@ int main(){
                 
                 // Check if start button is pressed to begin game
                 if (current_input.start_pressed) {
+                    scoreboard.lives = 3;
+                    scoreboard.score = 0;
                     reset_level(&pacman, &redghost, &pinkghost, &scoreboard);
                     game_state = GAMEPLAY;
                     // SOUND: add start sound
@@ -144,7 +143,7 @@ int main(){
                         if (scoreboard.lives == 0) {
                             game_state = GAME_OVER;
                         } else {
-                            reset_level(&pacman, &redghost, &pinkghost, &scoreboard);
+                            reset_sprites(&pacman, &redghost, &pinkghost);
                         }
                     }
                     game_speed_timer = time_us_32();
