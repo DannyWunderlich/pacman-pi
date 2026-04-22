@@ -2,6 +2,7 @@
 #define DISPLAY_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "controls.h"
 
 // TFT DISPLAY
@@ -60,31 +61,31 @@ typedef enum{
     STARTING_MENU,
     GAMEPLAY,
     GAME_OVER
-}GameState;
+} GameState;
 
 typedef enum{
     NORMAL,
     CHOMPER
-}PacmanMode;
+} PacmanMode;
 
 typedef enum {
     FACING_UP,
     FACING_LEFT,
     FACING_RIGHT,
     FACING_DOWN
-}PacmanFacing;
+} PacmanFacing;
 
 typedef enum{
     COLOR_PINK,
     COLOR_RED,
     COLOR_BLUE,
     COLOR_ORANGE
-}GhostColor;
+} GhostColor;
 
 typedef enum{
     IN_HOUSE,
     OUT_HOUSE
-}GhostLocation;
+} GhostLocation;
 
 typedef struct{
     uint8_t y;
@@ -93,7 +94,7 @@ typedef struct{
     uint8_t lastx;
     PacmanFacing direction;
     PacmanMode mode;
-}PacmanState;
+} PacmanState;
 
 typedef struct{
     uint8_t y;
@@ -104,7 +105,7 @@ typedef struct{
     GhostLocation location;
     uint8_t unlock_counter;
     int direction; // (0: UP, 1: LEFT, 2: DOWN, 3: RIGHT)
-}GhostState;
+} GhostState;
 
 typedef struct{
     int score;
@@ -112,41 +113,42 @@ typedef struct{
     uint8_t num_pellets;
     uint8_t num_powers;
     uint8_t total_food;
-}ScoreBoard;
+} ScoreBoard;
 
-struct repeating_timer ssd_timer;
-
-// Display Functions
+// Display functions
+void display_init(void);
+void display_flash_text(GameState state);
 void tft_write_command(uint8_t cmd);
 void tft_write_data(uint8_t data);
 void tft_set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void tft_fill_screen(uint16_t color);
-void display_init(void);
 void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_map(void);
+void draw_start_screen(void);
+void draw_end_screen(void);
+void redraw_black_in_house(GhostState ghost);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
-void draw_start_screen();
-GameState check_start_pressed(uint16_t keyevent, InputState* current_input, PacmanState pacman, GhostState redghost, GhostState pinkghost);
-GameState check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost, ScoreBoard* scoreboard);
-void draw_end_screen();
-void ssd_init_spi();
-void ssd_display_score(ScoreBoard scoreboard);
+void reset_game_map(void);
+void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s);
 
-// Pacman Functions
+// Pacman functions
 void update_pacman(InputState controls, PacmanState* pacman);
 void draw_pacman(InputState controls, PacmanState pacman);
+bool check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost);
 
-// Ghost Functions
+// Ghost functions
 void update_ghost(GhostState* ghost, PacmanState pacman);
 void draw_ghost(GhostState ghost, PacmanState pacman);
-void init_ghostunlock_timer();
-void ghostunlock_isr();
+void init_ghostunlock_timer(void);
+void ghostunlock_isr(void);
 
-// Scoreboarding Functions
-void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState pinkghost);
-void init_chomper_timer();
-void chomper_isr();
+// 7-seg scoreboard functions
+void ssd_init_spi(void);
+void ssd_display_score(ScoreBoard scoreboard);
 bool ssd_timer_callback(struct repeating_timer *t);
+void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState pinkghost);
+void init_chomper_timer(void);
+void chomper_isr(void);
 
 // Default map
 extern uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
@@ -155,8 +157,8 @@ extern uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
 extern volatile PacmanState pacman;
 extern volatile ScoreBoard scoreboard;
 extern volatile GhostState redghost;
-// extern volatile GhostState orangeghost;
 extern volatile GhostState pinkghost;
-// extern volatile GhostState blueghost;
+//extern volatile GhostState orangeghost;
+//extern volatile GhostState blueghost;
 
 #endif
