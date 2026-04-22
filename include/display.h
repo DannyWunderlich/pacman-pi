@@ -60,6 +60,7 @@
 typedef enum{
     STARTING_MENU,
     GAMEPLAY,
+    PAUSED,
     GAME_OVER
 } GameState;
 
@@ -125,6 +126,7 @@ void tft_fill_screen(uint16_t color);
 void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void draw_map(void);
 void draw_start_screen(void);
+void draw_paused_screen(void);
 void draw_end_screen(void);
 void redraw_black_in_house(GhostState ghost);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
@@ -154,12 +156,11 @@ void chomper_isr(void);
 // Default map
 extern uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X];
 
-// Global Pacman, Ghost, and scoreboard
+// Global Pacman, Ghost, scoreboard, and game state
 extern volatile PacmanState pacman;
 extern volatile ScoreBoard scoreboard;
 extern volatile GhostState redghost;
 extern volatile GhostState pinkghost;
-//extern volatile GhostState orangeghost;
-//extern volatile GhostState blueghost;
+extern GameState game_state;
 
 #endif

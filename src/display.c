@@ -1049,6 +1049,17 @@ BLACK, RED, BLACK, BLACK, BLACK, BLACK, RED, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+const uint16_t letter_d[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, ORANGE, BLACK, BLACK,
+BLACK, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 const uint16_t letter_g[TILE_WIDTH * TILE_HEIGHT] = {
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 BLACK, BLACK, RED, RED, RED, RED, RED, BLACK,
@@ -1079,6 +1090,17 @@ BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
 BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
 BLACK, BLACK, RED, BLACK, BLACK, BLACK, RED, BLACK,
 BLACK, BLACK, BLACK, RED, RED, RED, BLACK, BLACK,
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t letter_u[TILE_WIDTH * TILE_HEIGHT] = {
+BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, ORANGE, BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK,
+BLACK, BLACK, ORANGE, ORANGE, ORANGE, ORANGE, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
@@ -1154,6 +1176,10 @@ const uint8_t initial_tile_map[NUM_TILES_Y][NUM_TILES_X] = {
 };
 
 uint8_t tile_map[NUM_TILES_Y][NUM_TILES_X] = {0};
+
+// 7-segment display buffer for score and lives
+extern char font[];
+uint16_t __attribute__((aligned(16))) ssd_msg_buffer[8] = {0};
 
 // Pointers to all tiles for easy lookup
 const uint16_t* const tile_ptrs[48] = {
@@ -1247,8 +1273,11 @@ void ssd_display_score(ScoreBoard scoreboard) {
 }
 
 bool ssd_timer_callback(struct repeating_timer *t) {
-    ssd_display_score(scoreboard);
-    return true; // keep repeating
+    gpio_put(SSD_SPI_CSN, 0);
+    spi_write16_blocking(spi1, ssd_msg_buffer, 8);
+    gpio_put(SSD_SPI_CSN, 1);
+    
+    return true;
 }
 
 void display_init(){
@@ -1292,6 +1321,16 @@ void display_init(){
     tft_write_data(0x28);
 
     tft_write_command(0x29); // Display ON
+}
+
+void ssd_update_buffer(ScoreBoard scoreboard) {
+    char display_string[9];
+    snprintf(display_string, sizeof(display_string), "%05d  %1d", scoreboard.score, scoreboard.lives);
+    for (int i = 0; i < 8; i++) {
+        unsigned char c = display_string[i];
+        uint16_t seg = font[c];
+        ssd_msg_buffer[i] = (i << 8) | seg;
+    }
 }
 
 static inline void tft_fill_region(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color) {
@@ -1587,6 +1626,25 @@ void draw_start_screen(){
     draw_letter(letter_exclam, x0, y0, x1, y1);
 }
 
+void draw_paused_screen(){
+    uint16_t x0 = 136; 
+    uint16_t y0 = 13 * TILE_HEIGHT;
+    uint16_t x1 = x0 + TILE_WIDTH - 1;
+    uint16_t y1 = y0 + TILE_HEIGHT - 1;
+
+    draw_letter(letter_p, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_a, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_u, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_s, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_e, x0, y0, x1, y1);
+    x0 += 8; x1 = x0 + TILE_WIDTH - 1;
+    draw_letter(letter_d, x0, y0, x1, y1);
+}
+
 void draw_ghost(GhostState ghost, PacmanState pacman){
     uint8_t sel = 0;
     uint16_t x0;
@@ -1776,28 +1834,29 @@ void chomper_isr(){
 
 void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState pinkghost){
 
-    if(tile_map[pacman->y][pacman->x] == 46){ // Pellet
+    if (tile_map[pacman->y][pacman->x] == 46) { // Pellet
         tile_map[pacman->y][pacman->x] = 45;
         scoreboard->num_pellets -= 1;
         scoreboard->total_food -= 1;
         scoreboard->score += 10;
     }
-    else if(((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y))  && (pacman->mode == CHOMPER)){
-        scoreboard->score += 200;
-    }
-    else if(tile_map[pacman->y][pacman->x] == 47){ // Powerup 
+    else if (tile_map[pacman->y][pacman->x] == 47) { // Powerup
         tile_map[pacman->y][pacman->x] = 45;
-        scoreboard->score += 50;
         scoreboard->num_powers -= 1;
         scoreboard->total_food -= 1;
+        scoreboard->score += 50;
         pacman->mode = CHOMPER;
 
         // Count to 6 seconds then set pacmans mode back to normal (chomper_isr)
         timer0_hw->alarm[2] = timer0_hw->timerawl + 6000000; 
     }
+    
+    if (((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y))  && (pacman->mode == CHOMPER)){
+        scoreboard->score += 200;
+    }
 }
 
-void init_ghostunlock_timer(){
+void init_ghostunlock_timer() {
     irq_set_exclusive_handler(TIMER1_IRQ_2, ghostunlock_isr);
     timer1_hw->inte |= (1u << 2);
     irq_set_enabled(TIMER1_IRQ_2, true);
@@ -1811,40 +1870,31 @@ void ghostunlock_isr(){
     // Acknowldege interrupt
     timer1_hw->intr |= (1u << 2);
 
-    if(redghost.location == IN_HOUSE){
-        redghost.unlock_counter = (redghost.unlock_counter + 1) % 6;
-        if(redghost.unlock_counter == 5){
-            redghost.location = OUT_HOUSE;
-            // redghost.lastx = redghost.x;
-            // redghost.lasty = redghost.y;
-            redghost.x = OUT_START_LEFT_X;
-            redghost.y = OUT_START_LEFT_Y;
+    if (game_state == GAMEPLAY) {
+        if(redghost.location == IN_HOUSE){
+            redghost.unlock_counter = (redghost.unlock_counter + 1) % 6;
+            if(redghost.unlock_counter == 5){
+                redghost.location = OUT_HOUSE;
+                redghost.x = OUT_START_LEFT_X;
+                redghost.y = OUT_START_LEFT_Y;
+            }
+        }
+        else{
+            redghost.unlock_counter = 0;
+        }
 
-            redraw_black_in_house(redghost);
+        if(pinkghost.location == IN_HOUSE){
+            pinkghost.unlock_counter = (pinkghost.unlock_counter + 1) % 6;
+            if(pinkghost.unlock_counter == 5){
+                pinkghost.location = OUT_HOUSE;
+                pinkghost.x = OUT_START_RIGHT_X;
+                pinkghost.y = OUT_START_RIGHT_Y;
+            }
+        }
+        else{
+            pinkghost.unlock_counter = 0;
         }
     }
-    else{
-        redghost.unlock_counter = 0;
-        // printf("RED COUNT : %d\n", redghost.unlock_counter);
-    }
-
-    if(pinkghost.location == IN_HOUSE){
-        pinkghost.unlock_counter = (pinkghost.unlock_counter + 1) % 6;
-        if(pinkghost.unlock_counter == 5){
-            pinkghost.location = OUT_HOUSE;
-            // pinkghost.lastx = pinkghost.x;
-            // pinkghost.lasty = pinkghost.y;
-            pinkghost.x = OUT_START_RIGHT_X;
-            pinkghost.y = OUT_START_RIGHT_Y;
-
-            redraw_black_in_house(pinkghost);
-        }
-    }
-    else{
-        pinkghost.unlock_counter = 0;
-        // printf("PINK COUNT : %d\n", redghost.unlock_counter);
-    }
-
     timer1_hw->alarm[2] = timer1_hw->timerawl + 1000000;
 }
 
