@@ -5,6 +5,8 @@
 #include "hardware/i2c.h"
 #include "controls.h"
 
+//#define USING_I2C // COMMENT THIS OUT IF YOU DONT HAVE THE I2C EXPANSION --> USE GPIO 26 FOR START INSTEAD
+
 /* Joystick (ADC) parameters */
 static const uint16_t JOYSTICK_CENTER_X = 2048;
 static const uint16_t JOYSTICK_CENTER_Y = 2048;
@@ -44,10 +46,11 @@ void controls_init(void) {
     adc_gpio_init(JOYSTICK_ADC_GPIO_X);
     adc_gpio_init(JOYSTICK_ADC_GPIO_Y);
 
+    #ifdef USING_I2C
     // Initialize I2C for MCP23017 I/O expansion board (GPIO 42-43)
-    // i2c_init(I2C_BUTTONS, I2C_BUTTONS_BAUD);
-    // gpio_set_function(I2C_BUTTONS_SDA, GPIO_FUNC_I2C);
-    // gpio_set_function(I2C_BUTTONS_SCL, GPIO_FUNC_I2C);
+    i2c_init(I2C_BUTTONS, I2C_BUTTONS_BAUD);
+    gpio_set_function(I2C_BUTTONS_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_BUTTONS_SCL, GPIO_FUNC_I2C);
 
     // /*
     // Configure MCP23017 I/O expansion board connected pushbuttons:
@@ -56,22 +59,23 @@ void controls_init(void) {
     // - Default I2C address of MCP23017 is 0x27
     // */
 
-    // uint8_t i2c_write_data[2];
+    uint8_t i2c_write_data[2];
 
     // // Set all port A I/O pins as inputs
-    // i2c_write_data[0] = IO_BOARD_DIR;
-    // i2c_write_data[1] = 0xFF;
-    // i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, i2c_write_data, 2, false);
+    i2c_write_data[0] = IO_BOARD_DIR;
+    i2c_write_data[1] = 0xFF;
+    i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, i2c_write_data, 2, false);
 
     // // Enable pull-up resistors on all port A I/O pins 
-    // i2c_write_data[0] = IO_BOARD_PU;
-    // i2c_write_data[1] = 0xFF;
-    // i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, i2c_write_data, 2, false);
+    i2c_write_data[0] = IO_BOARD_PU;
+    i2c_write_data[1] = 0xFF;
+    i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, i2c_write_data, 2, false);
 
     // // Invert input polarity on all port A I/O pins
-    // i2c_write_data[0] = IO_BOARD_INV;
-    // i2c_write_data[1] = 0xFF;
-    // i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, i2c_write_data, 2, false);
+    i2c_write_data[0] = IO_BOARD_INV;
+    i2c_write_data[1] = 0xFF;
+    i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, i2c_write_data, 2, false);
+    #endif
 
     /* Configure built-in pushbutton (GPIO 26) on top of the Proton board as extra START button
        Just for testing purposes if you don't have MCP23017 this will work too.*/
@@ -146,22 +150,24 @@ void controls_update(void) {
     
     /* Pushbutton (I2C) update logic */
 
-    // uint8_t i2c_read_data;
+    #ifdef USING_I2C
+    uint8_t i2c_read_data;
 
     // // Select pin values register (return early if error occurs)
-    // if (i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, &IO_BOARD_GPIO, 1, true) != 1) return;
+    if (i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, &IO_BOARD_GPIO, 1, true) != 1) return;
     
-    // // Read pin values register data (return early if error occurs)
-    // if (i2c_read_blocking(I2C_BUTTONS, IO_BOARD_ADDR, &i2c_read_data, 1, false) != 1) return;
+    // Read pin values register data (return early if error occurs)
+    if (i2c_read_blocking(I2C_BUTTONS, IO_BOARD_ADDR, &i2c_read_data, 1, false) != 1) return;
 
-    // uint8_t buttons_current = i2c_read_data; 
+    uint8_t buttons_current = i2c_read_data; 
 
-    // // Flag START and/or SELECT bit as pressed if a rising edge was detected respectively
-    // uint8_t buttons_pressed = (uint8_t)(buttons_current & ~i2c_buttons_previous);
-    // if (buttons_pressed & (1u << I2C_BUTTONS_START_BIT)) controls.start_pressed = true;
-    // if (buttons_pressed & (1u << I2C_BUTTONS_SELECT_BIT)) controls.select_pressed = true;
+    // Flag START and/or SELECT bit as pressed if a rising edge was detected respectively
+    uint8_t buttons_pressed = (uint8_t)(buttons_current & ~i2c_buttons_previous);
+    if (buttons_pressed & (1u << I2C_BUTTONS_START_BIT)) controls.start_pressed = true;
+    if (buttons_pressed & (1u << I2C_BUTTONS_SELECT_BIT)) controls.select_pressed = true;
 
-    // i2c_buttons_previous = buttons_current;
+    i2c_buttons_previous = buttons_current;
+    #endif
 }
 
 InputState controls_get(void) { return controls; }
