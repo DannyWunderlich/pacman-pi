@@ -20,7 +20,7 @@ static i2c_inst_t* const I2C_BUTTONS = i2c1;
 static const uint I2C_BUTTONS_SDA = 42;
 static const uint I2C_BUTTONS_SCL = 43;
 static const uint I2C_BUTTONS_BAUD = 100000;
-static const uint8_t I2C_BUTTONS_START_BIT  = 0;
+static const uint8_t I2C_BUTTONS_START_BIT = 0;
 static const uint8_t I2C_BUTTONS_SELECT_BIT = 1;
 
 /* MCP23017 I/O expansion board register addresses */
@@ -30,11 +30,10 @@ static const uint8_t IO_BOARD_INV = 0x02; // Port A I/O pin invert input polarit
 static const uint8_t IO_BOARD_PU = 0x0C; // Port A I/O pin pull-up register
 static const uint8_t IO_BOARD_GPIO = 0x12; // Port A I/O pin values register
 
-/* Proton Board pushbutton parameters (GPIO 21 and 26 )*/
-static const uint GPIO_BUTTON_START = 21;
-static const uint GPIO_BUTTON_SELECT = 26;
+/* Proton Board pushbutton (GPIO 26)*/
+static const uint GPIO_BUTTON_START = 26;
 
-static uint8_t gpio_buttons_previous;
+bool gpio_button_previous;
 static uint8_t i2c_buttons_previous;
 
 static InputState controls;
@@ -74,21 +73,18 @@ void controls_init(void) {
     i2c_write_data[1] = 0xFF;
     i2c_write_blocking(I2C_BUTTONS, IO_BOARD_ADDR, i2c_write_data, 2, false);
 
-    /* Configure built-in pushbuttons on top of the Proton board (GPIO 21 and 26)
-       Just for testing purposes if you don't have MCP23017 these will work too.*/
+    /* Configure built-in pushbutton (GPIO 26) on top of the Proton board as extra START button
+       Just for testing purposes if you don't have MCP23017 this will work too.*/
     gpio_init(GPIO_BUTTON_START);
-    gpio_init(GPIO_BUTTON_SELECT);
     gpio_set_dir(GPIO_BUTTON_START, false);
-    gpio_set_dir(GPIO_BUTTON_SELECT, false);
-    gpio_pull_up(GPIO_BUTTON_START);
-    gpio_pull_up(GPIO_BUTTON_SELECT);
+    gpio_pull_down(GPIO_BUTTON_START);
 
     // Initialize control states
     controls.joystick = INPUT_DIRECTION_NONE;
     controls.start_pressed  = false;
     controls.select_pressed = false;
 
-    gpio_buttons_previous = 0;
+    gpio_button_previous = 0;
     i2c_buttons_previous = 0;
 }
 
@@ -143,13 +139,10 @@ void controls_update(void) {
 
     /* Proton Board pushbutton update logic */
 
-    uint8_t gpio_buttons_current = (!gpio_get(GPIO_BUTTON_START) << I2C_BUTTONS_START_BIT) | (!gpio_get(GPIO_BUTTON_SELECT) << I2C_BUTTONS_SELECT_BIT);
-    uint8_t gpio_buttons_pressed = gpio_buttons_current & ~gpio_buttons_previous;
-    
-    if (gpio_buttons_pressed & (1u << I2C_BUTTONS_START_BIT)) controls.start_pressed = true;
-    if (gpio_buttons_pressed & (1u << I2C_BUTTONS_SELECT_BIT)) controls.select_pressed = true;
-    
-    gpio_buttons_previous = gpio_buttons_current;
+    bool gpio_button_current = gpio_get(GPIO_BUTTON_START);
+    bool gpio_button_pressed = gpio_button_current && !gpio_button_previous;
+    if (gpio_button_pressed) controls.start_pressed = true;
+    gpio_button_previous = gpio_button_current;
     
     /* Pushbutton (I2C) update logic */
 
