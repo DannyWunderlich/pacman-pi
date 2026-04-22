@@ -1,8 +1,9 @@
-#include "stdio.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/gpio.h"
-#include "hardware/dma.h"
 #include "display.h"
 
 // =============================================================================
@@ -1366,7 +1367,36 @@ void reset_game_map() {
     memcpy(tile_map, initial_tile_map, sizeof(tile_map));
 }
 
-// Reset the map, scoreboard, and pacman + ghosts at their initial locations
+// Reset only the characters back to their starting positions and states
+void reset_sprites(PacmanState* p, GhostState* g1, GhostState* g2) {
+    // Reset pacman
+    p->x = PACMAN_START_X;
+    p->y = PACMAN_START_Y;
+    p->lastx = PACMAN_START_X;
+    p->lasty = PACMAN_START_Y;
+    p->direction = FACING_RIGHT;
+    p->mode = NORMAL;
+
+    // Reset ghosts
+    g1->x = HOUSE_START_LEFT_X;
+    g1->y = HOUSE_START_LEFT_Y;
+    g1->lastx = HOUSE_START_LEFT_X;
+    g1->lasty = HOUSE_START_LEFT_Y;
+    g1->location = IN_HOUSE;
+    g1->direction = 3; // Reset direction to right
+    
+    g2->x = HOUSE_START_RIGHT_X;
+    g2->y = HOUSE_START_RIGHT_Y;
+    g2->lastx = HOUSE_START_RIGHT_X;
+    g2->lasty = HOUSE_START_RIGHT_Y;
+    g2->location = IN_HOUSE;
+    g2->direction = 1; // Reset direction to left
+
+    // Redraw map to clear old Pacman and Ghosts
+    draw_map();
+}
+
+// Reset the entire level (map, scoreboard, and pacman + ghosts)
 void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s) {
     
     // Reset map
@@ -1375,23 +1405,25 @@ void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s) 
     // Reset scoreboard
     s->num_pellets = 237;
     s->num_powers = 4;
-
-    // Reset ghosts
-    g1->x = HOUSE_START_LEFT_X;
-    g1->y = HOUSE_START_LEFT_Y;
-    g1->location = IN_HOUSE;
+    s->total_food = 241;
     
-    g2->x = HOUSE_START_RIGHT_X;
-    g2->y = HOUSE_START_RIGHT_Y;
-    g2->location = IN_HOUSE;
+    // Reset entities to default
+    reset_sprites(p, g1, g2);
+}
 
-    // Reset pacman
-    p->x = PACMAN_START_X;
-    p->y = PACMAN_START_Y;
-    p->lastx = PACMAN_START_X;
-    p->lasty = PACMAN_START_Y;
+// Reset the entire level (map, scoreboard, and pacman + ghosts)
+void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s) {
+    
+    // Reset map
+    reset_game_map();
 
-    draw_map();
+    // Reset scoreboard
+    s->num_pellets = 237;
+    s->num_powers = 4;
+    s->total_food = 241;
+    
+    // Reset entities to default
+    reset_sprites(p, g1, g2);
 }
 
 void update_pacman(InputState controls, PacmanState* pacman) {
@@ -1864,25 +1896,21 @@ void redraw_black_in_house(GhostState ghost){
 }
 
 bool check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost) {
-<<<<<<< Updated upstream
-    return (((pacman->x == redghost->x && pacman->y == redghost->y) || (pacman->x == pinkghost->x && pacman->y == pinkghost->y)) && pacman->mode == NORMAL);
-=======
     if (pacman->mode != NORMAL) return false;
 
     /* Collision detection logic */
     bool hit_ghost = false;
     
     // Check if pacman and red ghost share same tile position
-    hit_ghost = ((pacman->x == redghost->x) && (pacman->y == redghost->y)) ||
+    hit_ghost = (pacman->x == redghost->x) && (pacman->y == redghost->y) ||
     // or pacman and red ghost swapped tile positions
-    ((pacman->x == redghost->lastx) && (pacman->y == redghost->lasty) && (pacman->lastx == redghost->x) && (pacman->lasty == redghost->y)) ||
+    (pacman->x == redghost->lastx) && (pacman->y == redghost->lasty) && (pacman->lastx == redghost->x) && (pacman->lasty == redghost->y) ||
     // or pacman and pink ghost share same tile position
-    ((pacman->x == pinkghost->x) && (pacman->y == pinkghost->y)) ||
+    (pacman->x == pinkghost->x) && (pacman->y == pinkghost->y) ||
     // or pacman and pink ghost swapped tile positions
-    ((pacman->x == pinkghost->lastx) && (pacman->y == pinkghost->lasty) && (pacman->lastx == pinkghost->x) && (pacman->lasty == pinkghost->y));
+    (pacman->x == pinkghost->lastx) && (pacman->y == pinkghost->lasty) && (pacman->lastx == pinkghost->x) && (pacman->lasty == pinkghost->y);
 
     return hit_ghost;
->>>>>>> Stashed changes
 }
 
 void draw_end_screen(){    
@@ -1944,8 +1972,7 @@ void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState r
         scoreboard->total_food -= 1;
         scoreboard->score += 10;
     }
-    else if(((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y) 
-    && (pacman->mode == CHOMPER))){
+    else if(((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y))  && (pacman->mode == CHOMPER)){
         scoreboard->score += 200;
     }
     else if(tile_map[pacman->y][pacman->x] == 47){ // Powerup 
