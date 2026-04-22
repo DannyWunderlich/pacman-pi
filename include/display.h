@@ -33,13 +33,13 @@
 #define NUM_GHOST_TILES_Y 3
 
 // Colors
-#define BLACK ((uint16_t)0x0000)
-#define BLUE ((uint16_t)0x001F)
-#define YELLOW ((uint16_t)0xFFE0)
-#define ORANGE ((uint16_t)0xFD86)
-#define RED ((uint16_t)0xF800)
-#define WHITE ((uint16_t)0xFFFF)
-#define PINK ((uint16_t)0xF59A)
+#define BLACK     ((uint16_t)0x0000)
+#define BLUE      ((uint16_t)0x001F)
+#define YELLOW    ((uint16_t)0xFFE0)
+#define ORANGE    ((uint16_t)0xFD86)
+#define RED       ((uint16_t)0xF800)
+#define WHITE     ((uint16_t)0xFFFF)
+#define PINK      ((uint16_t)0xF59A)
 #define LIGHTBLUE ((uint16_t)0xA51E)
 
 // Pacman Starting Location
@@ -116,20 +116,29 @@ typedef struct{
     uint8_t total_food;
 } ScoreBoard;
 
-// Display functions
+// Initializations
 void display_init(void);
-void display_flash_text(GameState state);
+void ssd_init_spi(void);
+
+// TFT write functions
 void tft_write_command(uint8_t cmd);
 void tft_write_data(uint8_t data);
 void tft_set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void tft_fill_region(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color);
 void tft_fill_screen(uint16_t color);
 void tft_write_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void tft_write_sliced_tile(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+
+// Display draw functions
 void draw_map(void);
 void draw_start_screen(void);
 void draw_paused_screen(void);
 void draw_end_screen(void);
-void redraw_black_in_house(GhostState ghost);
+void draw_200_label(int x_tile, int y_tile);
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void redraw_tile(int x, int y);
+void redraw_black_in_house(GhostState ghost);
+void display_flash_text(GameState state);
 void reset_game_map(void);
 void reset_sprites(PacmanState* p, GhostState* g1, GhostState* g2);
 void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s);
@@ -138,6 +147,7 @@ void reset_level(PacmanState* p, GhostState* g1, GhostState* g2, ScoreBoard* s);
 void update_pacman(InputState controls, PacmanState* pacman);
 void draw_pacman(InputState controls, PacmanState pacman);
 bool check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost);
+bool is_overlapping(int px, int py, int gx, int gy);
 
 // Ghost functions
 void update_ghost(GhostState* ghost, PacmanState pacman);
@@ -145,9 +155,9 @@ void draw_ghost(GhostState ghost, PacmanState pacman);
 void init_ghostunlock_timer(void);
 void ghostunlock_isr(void);
 
-// 7-seg scoreboard functions
-void ssd_init_spi(void);
+// Scoreboard functions
 void ssd_display_score(ScoreBoard scoreboard);
+void ssd_update_buffer(ScoreBoard scoreboard);
 bool ssd_timer_callback(struct repeating_timer *t);
 void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState redghost, GhostState pinkghost);
 void init_chomper_timer(void);

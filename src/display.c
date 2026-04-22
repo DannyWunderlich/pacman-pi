@@ -1137,6 +1137,28 @@ BLACK, BLACK, BLACK, BLACK, RED, BLACK, BLACK, BLACK,
 BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
 };
 
+const uint16_t digit_0[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK,
+    BLACK, WHITE, BLACK, BLACK, BLACK, BLACK, WHITE, BLACK,
+    BLACK, WHITE, BLACK, BLACK, BLACK, BLACK, WHITE, BLACK,
+    BLACK, WHITE, BLACK, BLACK, BLACK, BLACK, WHITE, BLACK,
+    BLACK, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
+const uint16_t digit_2[TILE_WIDTH * TILE_HEIGHT] = {
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, WHITE, BLACK,
+    BLACK, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK,
+    BLACK, WHITE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+    BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+};
+
 // ==========================================================================
 //                              DEFAULT MAP
 // ==========================================================================
@@ -1189,6 +1211,8 @@ const uint16_t* const tile_ptrs[48] = {
     tile_30, tile_31, tile_32, tile_33, tile_34, tile_35, tile_36, tile_37, tile_38, tile_39,
     tile_40, tile_41, tile_42, tile_43, tile_44, tile_45, tile_46, tile_47
 };
+
+extern volatile PacmanState pacman;
 
 void tft_write_command(uint8_t cmd){
     gpio_put(TFT_DC, 0); // Command mode
@@ -1333,7 +1357,7 @@ void ssd_update_buffer(ScoreBoard scoreboard) {
     }
 }
 
-static inline void tft_fill_region(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color) {
+void tft_fill_region(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color) {
     uint32_t num_pixels = (uint32_t)(x1 - x0 + 1) * (y1 - y0 + 1);
 
     uint8_t hi = (uint8_t)(color >> 8);
@@ -1519,6 +1543,15 @@ void draw_pacman(InputState controls, PacmanState pacman){
     uint16_t x1;
     uint16_t y1;
 
+    // Redraw the 3x3 grid around previous Pacman location
+    if (pacman.x != pacman.lastx || pacman.y != pacman.lasty) {
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                redraw_tile(pacman.lastx + j, pacman.lasty + i);
+            }
+        }
+    }
+
     // Draw the pacman tiles
     for(int i = 0; i < NUM_PACMAN_TILES_Y; i ++){
         for(int j = 0; j < NUM_PACMAN_TILES_X; j ++){
@@ -1528,7 +1561,7 @@ void draw_pacman(InputState controls, PacmanState pacman){
             x1 = x0 + TILE_WIDTH - 1;
             y1 = y0 + TILE_HEIGHT - 1;
 
-            switch(sel){
+            switch (sel) {
                 case 0: (pacman.direction == FACING_LEFT) ? tft_write_sliced_tile(face_left_tl, x0 + 1, y0, x1, y1) :
                         (pacman.direction == FACING_RIGHT) ? tft_write_tile(face_right_tl, x0, y0, x1, y1)          :
                         (pacman.direction == FACING_UP) ? tft_write_tile(face_up_tl, x0, y0, x1, y1)                :
@@ -1553,33 +1586,8 @@ void draw_pacman(InputState controls, PacmanState pacman){
             sel ++;
         }
     }
-
-    // Redraw black to the direction he was coming from
-    uint16_t fill_color = BLACK;
-
-    // Redraw wrap around
-    if (pacman.x != pacman.lastx || pacman.y != pacman.lasty) {
-        x0 = pacman.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = x0 + (2 * TILE_WIDTH) - 1;
-        y0 = pacman.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + (2 * TILE_HEIGHT) - 1;
-
-        // Crop the box based on direction
-        if (pacman.lastx < pacman.x && !(pacman.lastx == 0 && pacman.x == 27)) {
-        x1 -= TILE_WIDTH;   // Moving right: crop the right edge
-        } 
-        else if (pacman.lastx > pacman.x && !(pacman.lastx == 27 && pacman.x == 0)) {
-            x0 += TILE_WIDTH;   // Moving left: crop the left edge
-        } 
-        else if (pacman.lasty < pacman.y) {
-            y1 -= TILE_HEIGHT;  // Moving down: crop the bottom edge
-        } 
-        else if (pacman.lasty > pacman.y) {
-            y0 += TILE_HEIGHT;  // Moving up: crop the top edge
-        }
-        tft_fill_region(x0, y0, x1, y1, fill_color);
-    }
 }
+
 void draw_letter(const uint16_t* tile, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1){
     tft_write_tile(tile, x0, y0, x1, y1);
 }
@@ -1652,8 +1660,17 @@ void draw_ghost(GhostState ghost, PacmanState pacman){
     uint16_t x1;
     uint16_t y1;
 
-    for (int i = 0; i < NUM_GHOST_TILES_Y; i ++){
-        for(int j = 0; j < NUM_GHOST_TILES_X; j ++){
+    // Redraw the 3x3 grid around previous Ghost location
+    if (ghost.x != ghost.lastx || ghost.y != ghost.lasty) {
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                redraw_tile(ghost.lastx + j, ghost.lasty + i);
+            }
+        }
+    }
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
             
             x0 = (ghost.x + j) * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
             y0 = (ghost.y + i) * TILE_HEIGHT - (TILE_HEIGHT / 2);
@@ -1685,56 +1702,22 @@ void draw_ghost(GhostState ghost, PacmanState pacman){
                          ghost.color == COLOR_ORANGE ? tft_write_tile(orange_br, x0, y0, x1, y1) : 
                          ghost.color == COLOR_BLUE ? tft_write_tile(blue_br, x0, y0, x1, y1) : (void)0;
                 break;
-                default:
-                break;
             }
             sel ++;
         }
     }
+}
 
-    // Redraw black the direction the ghost came from
-    uint16_t fill_color = BLACK;
+void draw_200_label(int x_tile, int y_tile) {
+    if (x_tile > 25) x_tile = 25;
+    if (y_tile > 30) y_tile = 30;
 
-    if(ghost.lastx < ghost.x){
-        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = x0 + TILE_WIDTH - 1;
-        y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + (2 * TILE_HEIGHT - 1);
-        tft_fill_region(x0, y0, x1, y1, fill_color);
-    }
-    else if(ghost.lastx > ghost.x){
-        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET + (TILE_WIDTH / 2);
-        x1 = x0 + TILE_WIDTH - 1;
-        y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + (2 * TILE_HEIGHT - 1);
-        tft_fill_region(x0, y0, x1, y1, fill_color);
-    }
-    else if(ghost.lasty < ghost.y) {
-        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = x0 + (2 * TILE_WIDTH - 1);
-        y0 = ghost.lasty * TILE_HEIGHT - (TILE_HEIGHT / 2);
-        y1 = y0 + TILE_HEIGHT - 1;
-        tft_fill_region(x0, y0, x1, y1, fill_color);
-    }   
-    else if (ghost.lasty > ghost.y) {
-        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET - (TILE_WIDTH / 2);
-        x1 = x0 + (2 * TILE_WIDTH - 1);
-        y0 = ghost.lasty * TILE_HEIGHT + (TILE_HEIGHT / 2);
-        y1 = y0 + TILE_HEIGHT - 1;
-        tft_fill_region(x0, y0, x1, y1, fill_color);
-    }
-
-     // Write a pellet / power if it is there --> Makes the ghosts look a little weird but whatever
-    if(tile_map[ghost.lasty][ghost.lastx] == 46 || tile_map[ghost.lasty][ghost.lastx] == 47){
-        x0 = ghost.lastx * TILE_WIDTH + HORIZONTAL_OFFSET;
-        y0 = ghost.lasty * TILE_HEIGHT;
-        x1 = x0 + TILE_WIDTH - 1;
-        y1 = y0 + TILE_HEIGHT - 1;
-
-        tile_map[ghost.lasty][ghost.lastx] == 46 ? tft_write_tile(tile_46, x0, y0, x1, y1) :
-                                                   tft_write_tile(tile_47, x0, y0, x1, y1);
-
-    }
+    uint16_t x0 = x_tile * TILE_WIDTH + HORIZONTAL_OFFSET;
+    uint16_t y0 = y_tile * TILE_HEIGHT;
+    
+    tft_write_tile(digit_2, x0, y0, x0 + 7, y0 + 7); 
+    tft_write_tile(digit_0, x0 + 8, y0, x0 + 15, y0 + 7);
+    tft_write_tile(digit_0, x0 + 16, y0, x0 + 23, y0 + 7);
 }
 
 void redraw_black_in_house(GhostState ghost){
@@ -1763,22 +1746,32 @@ void redraw_black_in_house(GhostState ghost){
     }
 }
 
+void redraw_tile(int x, int y) {
+    uint16_t x0 = x * TILE_WIDTH + HORIZONTAL_OFFSET;
+    uint16_t y0 = y * TILE_HEIGHT;
+    uint16_t x1 = x0 + TILE_WIDTH - 1;
+    uint16_t y1 = y0 + TILE_HEIGHT - 1;
+
+    if (x < 0 || x >= NUM_TILES_X || y < 0 || y >= NUM_TILES_Y) {
+        tft_write_tile(tile_45, x0, y0, x1, y1);
+        return;
+    }
+    tft_write_tile(tile_ptrs[tile_map[y][x]], x0, y0, x1, y1);
+}
+
+bool is_overlapping(int px, int py, int gx, int gy) {
+    int dx = abs(px - gx);
+    if (dx >= 26) dx = 28 - dx;
+    int dy = abs(py - gy);
+    
+    return (dx <= 1 && dy <= 1);
+}
+
 bool check_collision(PacmanState* pacman, GhostState* redghost, GhostState* pinkghost) {
     if (pacman->mode != NORMAL) return false;
 
-    /* Collision detection logic */
-    bool hit_ghost = false;
-    
-    // Check if pacman and red ghost share same tile position
-    hit_ghost = ((pacman->x == redghost->x) && (pacman->y == redghost->y)) ||
-    // or pacman and red ghost swapped tile positions
-    ((pacman->x == redghost->lastx) && (pacman->y == redghost->lasty) && (pacman->lastx == redghost->x) && (pacman->lasty == redghost->y)) ||
-    // or pacman and pink ghost share same tile position
-    ((pacman->x == pinkghost->x) && (pacman->y == pinkghost->y)) ||
-    // or pacman and pink ghost swapped tile positions
-    ((pacman->x == pinkghost->lastx) && (pacman->y == pinkghost->lasty) && (pacman->lastx == pinkghost->x) && (pacman->lasty == pinkghost->y));
-
-    return hit_ghost;
+    return is_overlapping(pacman->x, pacman->y, redghost->x, redghost->y) ||
+           is_overlapping(pacman->x, pacman->y, pinkghost->x, pinkghost->y);
 }
 
 void draw_end_screen(){    
@@ -1850,10 +1843,7 @@ void update_scoreboard(PacmanState* pacman, ScoreBoard* scoreboard, GhostState r
         // Count to 6 seconds then set pacmans mode back to normal (chomper_isr)
         timer0_hw->alarm[2] = timer0_hw->timerawl + 6000000; 
     }
-    
-    if (((pacman->x == redghost.x && pacman->y == redghost.y)  || (pacman->x == pinkghost.x && pacman->y == pinkghost.y))  && (pacman->mode == CHOMPER)){
-        scoreboard->score += 200;
-    }
+    ssd_update_buffer(*scoreboard);
 }
 
 void init_ghostunlock_timer() {
@@ -1899,7 +1889,6 @@ void ghostunlock_isr(){
 }
 
 void update_ghost(GhostState* ghost, PacmanState pacman){
-    
     ghost->lastx = ghost->x;
     ghost->lasty = ghost->y;
 
@@ -1908,60 +1897,52 @@ void update_ghost(GhostState* ghost, PacmanState pacman){
         ghost->y = (ghost->color == COLOR_ORANGE || ghost->color == COLOR_RED) ? HOUSE_START_LEFT_Y : HOUSE_START_RIGHT_Y;
     }
     else{
-        // If the ghost is eaten, teleport them back inside the house
-        if ((pacman.mode == CHOMPER) && (ghost->x == pacman.x) && (ghost->y == pacman.y)){
-            ghost->x = (ghost->color == COLOR_RED) ? HOUSE_START_LEFT_X : HOUSE_START_RIGHT_X;
-            ghost->y = (ghost->color == COLOR_RED) ? HOUSE_START_LEFT_Y : HOUSE_START_RIGHT_Y;
-            ghost->location = IN_HOUSE;
-        }
-        // Otherwise, ghosts follow ai random path ==> DANNY : I used gemini for this part
-        else {
+        // Ghosts follow ai random path
+        int dx[] = {0, -1, 0, 1}; // UP, LEFT, DOWN, RIGHT
+        int dy[] = {-1, 0, 1, 0};
 
-            int dx[] = {0, -1, 0, 1}; // UP, LEFT, DOWN, RIGHT
-            int dy[] = {-1, 0, 1, 0};
+        // 1. Check if the tile directly in front of us is clear
+        int next_x = ghost->x + dx[ghost->direction];
+        if (next_x < 0) next_x = 27;
+        if (next_x > 27) next_x = 0;
+        int next_y = ghost->y + dy[ghost->direction];
 
-            // 1. Check if the tile directly in front of us is clear
-            int next_x = ghost->x + dx[ghost->direction];
-            int next_y = ghost->y + dy[ghost->direction];
-    
-            bool can_move_forward = false;
-            if (next_x >= 0 && next_x < NUM_TILES_X && next_y >= 0 && next_y < NUM_TILES_Y) {
-                if (tile_map[next_y][next_x] >= 45) { // 45+ are non-wall tiles
-                    can_move_forward = true;
-                }
+        bool can_move_forward = false;
+        if (next_y >= 0 && next_y < NUM_TILES_Y) {
+            if (tile_map[next_y][next_x] >= 45) { // 45+ are non-wall tiles
+                can_move_forward = true;
             }
+        }
 
-            // 2. If we hit a wall OR we are at an intersection, pick a new direction
-            // (We use a simple probability to decide to turn at intersections)
-            if (!can_move_forward || (rand() % 10 == 0)) { 
-                int attempts = 0;
-                int new_dir = rand() % 4;
+        // 2. If we hit a wall OR we are at an intersection, pick a new direction
+        // (We use a simple probability to decide to turn at intersections)
+        if (!can_move_forward || (rand() % 10 == 0)) { 
+            int attempts = 0;
+            int new_dir = rand() % 4;
+    
+            // Try different directions until we find one that isn't a wall
+            while (attempts < 8) {
+                int test_x = ghost->x + dx[new_dir];
+                if (test_x < 0) test_x = 27;
+                if (test_x > 27) test_x = 0;
+                int test_y = ghost->y + dy[new_dir];
         
-                // Try different directions until we find one that isn't a wall
-                while (attempts < 8) {
-                    int test_x = ghost->x + dx[new_dir];
-                    int test_y = ghost->y + dy[new_dir];
-            
-                    if (test_x >= 0 && test_x < NUM_TILES_X && test_y >= 0 && test_y < NUM_TILES_Y) {
-                        if (tile_map[test_y][test_x] >= 45) {
-                         // Avoid 180 turn unless we are totally stuck
-                            if (new_dir != (ghost->direction + 2) % 4 || attempts > 4) {
-                                ghost->direction = new_dir;
-                                break;
-                            }
-                        }
+                if (test_y >= 0 && test_y < NUM_TILES_Y && tile_map[test_y][test_x] >= 45) {
+                    if (new_dir != (ghost->direction + 2) % 4 || attempts > 4) {
+                        ghost->direction = new_dir;
+                        break;
                     }
-                    new_dir = (new_dir + 1) % 4;
-                    attempts++;
+                }
+                new_dir = (new_dir + 1) % 4;
+                attempts++;
+            }
         }
+        int final_x = ghost->x + dx[ghost->direction];
+        if (final_x < 0) final_x = 27;
+        if (final_x > 27) final_x = 0;
+        ghost->x = final_x;
+        ghost->y = (ghost->y + dy[ghost->direction]);
     }
-        
-        ghost->x += dx[ghost->direction];
-        ghost->y += dy[ghost->direction];
-
-        }
-    }
-
 }
 
 void display_flash_text(GameState state) {
@@ -1979,3 +1960,4 @@ void display_flash_text(GameState state) {
         flash_text_timer = time_us_32();
     }
 }
+
