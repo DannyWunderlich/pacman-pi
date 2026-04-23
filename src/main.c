@@ -3,6 +3,7 @@
 #include "pico/stdlib.h"
 #include "display.h"
 #include "controls.h"
+#include "sound.h"
 
 InputState current_input = {
     .joystick = INPUT_DIRECTION_NONE,
@@ -72,6 +73,11 @@ int main() {
     // Initialize joystick and buttons
     controls_init();
 
+    //init sound
+    sound_init();
+    sound_set_menu_active(true);
+    
+    
     // Initialize the Chomper interrupt (mode for when you pick up a powerup)
     init_chomper_timer();
 
@@ -85,6 +91,7 @@ int main() {
     for(;;){
         controls_update();
         current_input = controls_get();
+        sound_update();
 
         switch (game_state) {
             case STARTING_MENU:
@@ -99,6 +106,11 @@ int main() {
                     scoreboard.score = 0;
                     ssd_update_buffer(scoreboard);
                     reset_level(&pacman, &redghost, &pinkghost, &scoreboard);
+
+                    sound_set_menu_active(false);
+                    sound_play_start();
+                    sound_set_gameplay_active(true);
+
                     game_state = GAMEPLAY;
                     // SOUND: add start sound
                 }
@@ -108,6 +120,9 @@ int main() {
 
                 if (current_input.start_pressed) {
                     draw_paused_screen();
+
+                    sound_set_gameplay_active(false);
+
                     game_state = PAUSED;
                     break; // Skip the rest of the frame
                 }
@@ -178,6 +193,7 @@ int main() {
                         ssd_update_buffer(scoreboard);
                         if (scoreboard.lives == 0) {
                             tft_fill_screen(BLACK);
+                            sound_play_game_over();
                             game_state = GAME_OVER;
                         } else {
                             reset_sprites(&pacman, &redghost, &pinkghost);
@@ -198,6 +214,8 @@ int main() {
                     
                     // Reset timer when unpausing 
                     game_speed_timer = time_us_32();
+
+                    sound_set_gameplay_active(true);
                     
                     game_state = GAMEPLAY;
                 }
@@ -211,6 +229,11 @@ int main() {
                 // Check if start button is pressed to restart game
                 if (current_input.start_pressed) {
                     tft_fill_screen(BLACK);
+                    
+                    sound_stop();
+                    sound_set_menu_active(true);
+
+
                     game_state = STARTING_MENU;
                 }
                 break;
